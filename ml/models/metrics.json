@@ -1,0 +1,88 @@
+{
+  "dataset": "EngineFaultDB (Vergara et al., 2023)",
+  "model_type": "RandomForestClassifier",
+  "total_test_samples": 11200,
+  "overall_metrics": {
+    "accuracy": 0.744018,
+    "macro_f1": 0.75281,
+    "weighted_f1": 0.743877,
+    "macro_precision": 0.753359,
+    "weighted_precision": 0.744865,
+    "macro_recall": 0.753351,
+    "weighted_recall": 0.744018
+  },
+  "per_class_metrics": {
+    "No Fault": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1_score": 1.0,
+      "support": 3200
+    },
+    "Rich Mixture": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1_score": 1.0,
+      "support": 2200
+    },
+    "Lean Mixture": {
+      "precision": 0.52435,
+      "recall": 0.477333,
+      "f1_score": 0.499738,
+      "support": 3000
+    },
+    "Low Voltage": {
+      "precision": 0.489084,
+      "recall": 0.536071,
+      "f1_score": 0.511501,
+      "support": 2800
+    }
+  },
+  "confusion_matrix": [
+    [
+      3200,
+      0,
+      0,
+      0
+    ],
+    [
+      0,
+      2200,
+      0,
+      0
+    ],
+    [
+      0,
+      0,
+      1432,
+      1568
+    ],
+    [
+      0,
+      0,
+      1299,
+      1501
+    ]
+  ],
+  "class_labels": {
+    "0": "No Fault",
+    "1": "Rich Mixture",
+    "2": "Lean Mixture",
+    "3": "Low Voltage"
+  },
+  "feature_importances": {
+    "CO": 0.123564,
+    "Force": 0.105751,
+    "Consumption L/H": 0.086408,
+    "HC": 0.085567,
+    "Power": 0.085118,
+    "Consumption L/100KM": 0.084131,
+    "Speed": 0.072967,
+    "RPM": 0.069415,
+    "O2": 0.067725,
+    "CO2": 0.066841,
+    "TPS": 0.046456,
+    "MAP": 0.038431,
+    "AFR": 0.036438,
+    "Lambda": 0.03119
+  }
+}

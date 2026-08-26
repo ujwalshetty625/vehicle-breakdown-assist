@@ -177,10 +177,10 @@ def save_training_artifacts(
     models_dir = Path(models_dir)
     models_dir.mkdir(parents=True, exist_ok=True)
 
-    # 1. Save model weights
+    # 1. Save model weights (compressed with joblib compress=3 for lightweight git & memory transfer)
     model_path = models_dir / MODEL_FILENAME
-    joblib.dump(model, str(model_path))
-    logger.info(f"Model saved to: {model_path}")
+    joblib.dump(model, str(model_path), compress=3)
+    logger.info(f"Model saved to: {model_path} (compressed size: {os.path.getsize(model_path) / (1024*1024):.2f} MB)")
 
     # 2. Save feature order contract
     feature_order_path = models_dir / FEATURE_ORDER_FILENAME
