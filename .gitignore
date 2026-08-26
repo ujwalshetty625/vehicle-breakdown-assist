@@ -218,7 +218,7 @@ __marimo__/
 .streamlit/secrets.toml
 
 # Project Specific ML ignores
-ml/data/
-ml/models/
-ml/scratch/
-*.pkl
+#ml/data/
+#ml/models/
+#ml/scratch/
+#*.pkl
