@@ -2,10 +2,10 @@
 train.py - Model training, cross-validation tuning, and artifact serialization.
 
 This script:
-1. Loads and prepares stratified training/testing data via preprocessing.py.
-2. Compares multiple Random Forest configurations using 5-fold Stratified Cross-Validation (Macro F1).
+1. Loads and prepares deduplicated stratified training/testing data via preprocessing.py.
+2. Compares candidate Random Forest configurations using 5-fold Stratified Cross-Validation (Macro F1).
 3. Trains the champion model on the full training partition.
-4. Serializes the trained model artifact to ml/models/model.pkl.
+4. Serializes the trained model artifact to ml/models/model.pkl with joblib compression (level 3).
 5. Exports feature ordering (feature_order.json) and class label mappings (labels.json).
 6. Outputs a comprehensive training summary to console.
 """
@@ -57,34 +57,35 @@ def evaluate_candidate_models(
     """
     candidate_configs = [
         {
-            "name": "RF_Config_1 (Fast Baseline)",
-            "params": {
-                "n_estimators": 100,
-                "max_depth": 15,
-                "min_samples_split": 5,
-                "class_weight": "balanced",
-                "random_state": random_state,
-                "n_jobs": -1
-            }
-        },
-        {
-            "name": "RF_Config_2 (Recommended Deep)",
+            "name": "RF_Config_1 (Balanced Baseline, N=200)",
             "params": {
                 "n_estimators": 200,
-                "max_depth": None,
-                "min_samples_split": 2,
-                "class_weight": "balanced",
-                "random_state": random_state,
-                "n_jobs": -1
-            }
-        },
-        {
-            "name": "RF_Config_3 (High Capacity)",
-            "params": {
-                "n_estimators": 300,
                 "max_depth": 25,
                 "min_samples_split": 2,
                 "class_weight": "balanced",
+                "random_state": random_state,
+                "n_jobs": -1
+            }
+        },
+        {
+            "name": "RF_Config_2 (Balanced Subsample, N=300)",
+            "params": {
+                "n_estimators": 300,
+                "max_depth": None,
+                "min_samples_split": 2,
+                "class_weight": "balanced_subsample",
+                "random_state": random_state,
+                "n_jobs": -1
+            }
+        },
+        {
+            "name": "RF_Config_3 (Tuned Subsample + Feat0.7, N=300)",
+            "params": {
+                "n_estimators": 300,
+                "max_depth": None,
+                "min_samples_split": 2,
+                "max_features": 0.7,
+                "class_weight": "balanced_subsample",
                 "random_state": random_state,
                 "n_jobs": -1
             }
@@ -97,11 +98,11 @@ def evaluate_candidate_models(
     best_config = candidate_configs[0]
     best_model = None
 
-    print("\n" + "=" * 75)
-    print(" " * 18 + f"STRATIFIED {cv_folds}-FOLD CROSS-VALIDATION")
-    print("=" * 75)
-    print(f"{'Configuration Name':<32} | {'Macro F1 (Mean +/- Std)':<22} | {'Accuracy (Mean)':<15}")
-    print("-" * 75)
+    print("\n" + "=" * 80)
+    print(" " * 20 + f"STRATIFIED {cv_folds}-FOLD CROSS-VALIDATION")
+    print("=" * 80)
+    print(f"{'Configuration Name':<42} | {'Macro F1 (Mean +/- Std)':<22} | {'Accuracy (Mean)':<15}")
+    print("-" * 80)
 
     for candidate in candidate_configs:
         model = RandomForestClassifier(**candidate["params"])
@@ -123,14 +124,14 @@ def evaluate_candidate_models(
         }
         comparison_results.append(result_entry)
 
-        print(f"{candidate['name']:<32} | {mean_f1:6.4f} +/- {std_f1:6.4f}     | {mean_acc:6.4f}")
+        print(f"{candidate['name']:<42} | {mean_f1:6.4f} +/- {std_f1:6.4f}     | {mean_acc:6.4f}")
 
         if mean_f1 > best_f1:
             best_f1 = mean_f1
             best_config = candidate
             best_model = model
 
-    print("=" * 75)
+    print("=" * 80)
     print(f"[CHAMPION] Selected Champion: {best_config['name']} with Macro F1 = {best_f1:.4f}\n")
 
     return best_model, best_config, comparison_results
@@ -165,6 +166,7 @@ def save_training_artifacts(
 ) -> Dict[str, Path]:
     """
     Saves model weights, feature order schema, and label mappings.
+    Uses joblib compression (level 3) to keep artifact size under GitHub's 100MB limit.
 
     Args:
         model: Fitted RandomForestClassifier.
@@ -177,10 +179,11 @@ def save_training_artifacts(
     models_dir = Path(models_dir)
     models_dir.mkdir(parents=True, exist_ok=True)
 
-    # 1. Save model weights (compressed with joblib compress=3 for lightweight git & memory transfer)
+    # 1. Save model weights (compressed)
     model_path = models_dir / MODEL_FILENAME
     joblib.dump(model, str(model_path), compress=3)
-    logger.info(f"Model saved to: {model_path} (compressed size: {os.path.getsize(model_path) / (1024*1024):.2f} MB)")
+    file_size_mb = os.path.getsize(model_path) / (1024 * 1024)
+    logger.info(f"Model saved to: {model_path} (compressed size: {file_size_mb:.2f} MB)")
 
     # 2. Save feature order contract
     feature_order_path = models_dir / FEATURE_ORDER_FILENAME
@@ -214,7 +217,7 @@ def print_training_summary(
     print("\n" + "=" * 70)
     print(" " * 22 + "MODEL TRAINING SUMMARY")
     print("=" * 70)
-    print(f"Algorithm:           RandomForestClassifier")
+    print(f"Algorithm:           RandomForestClassifier (v2)")
     print(f"Training Samples:    {X_train.shape[0]:,}")
     print(f"Testing Samples:     {X_test.shape[0]:,}")
     print(f"Input Features:      {X_train.shape[1]}")
@@ -241,7 +244,7 @@ def run_training_pipeline() -> Tuple[RandomForestClassifier, Dict[str, Any]]:
     """
     logger.info("Initializing ML Training Pipeline...")
     
-    # 1. Prepare data
+    # 1. Prepare data (deduplicated & stratified)
     X_train, X_test, y_train, y_test, scaler, df_clean = prepare_dataset()
 
     # 2. Evaluate candidate configs
