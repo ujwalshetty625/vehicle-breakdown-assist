@@ -48,7 +48,8 @@ def find_candidates(
         capability_names = [c.name for c in p.capabilities]
         if required_capability not in capability_names:
             continue
-        if vehicle_type not in p.vehicle_types.split(","):
+        vehicle_type_names = [vt.name for vt in p.vehicle_types]
+        if vehicle_type not in vehicle_type_names:
             continue
 
         distance = haversine_km(latitude, longitude, p.latitude, p.longitude)

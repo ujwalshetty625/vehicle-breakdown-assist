@@ -5,7 +5,7 @@ class ProviderOut(BaseModel):
     name: str
     latitude: float
     longitude: float
-    vehicle_types: str
+    vehicle_types: list[str]
     is_available: bool
     rating: float
     capabilities: list[str]
