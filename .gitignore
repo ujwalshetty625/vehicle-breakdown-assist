@@ -222,3 +222,4 @@ __marimo__/
 #ml/models/
 #ml/scratch/
 #*.pkl
+backend/breakdown_assist.db
