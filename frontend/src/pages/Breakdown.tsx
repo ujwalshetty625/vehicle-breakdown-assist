@@ -89,10 +89,15 @@ function Breakdown({ onBack, onComplete }: BreakdownProps) {
     const [latitude, setLatitude] = useState<number | null>(null);
     const [longitude, setLongitude] = useState<number | null>(null);
 
-    /* Engine / Breakdown Photo Upload state */
+    /* Engine / Breakdown Photo Upload & Camera state */
     const [enginePhoto, setEnginePhoto] = useState<string | null>(null);
     const [photoName, setPhotoName] = useState<string>("");
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const cameraInputRef = useRef<HTMLInputElement>(null);
+
+    /* Voice Input State */
+    const [isListening, setIsListening] = useState(false);
+    const recognitionRef = useRef<any>(null);
 
     /* Diagnostic Telemetry state */
     const [presets, setPresets] = useState<DiagnosticPreset[]>([]);
@@ -101,6 +106,65 @@ function Breakdown({ onBack, onComplete }: BreakdownProps) {
     const [telemetryFetched, setTelemetryFetched] = useState(false);
     const [showFineTune, setShowFineTune] = useState(false);
     const [activeSymptomId, setActiveSymptomId] = useState<string>("");
+
+    /* Voice Speech Recognition Handler */
+    const handleToggleVoiceInput = () => {
+        const windowObj = window as any;
+        const SpeechRecognitionClass = windowObj.SpeechRecognition || windowObj.webkitSpeechRecognition;
+
+        if (!SpeechRecognitionClass) {
+            setError("Voice speech recognition is not supported in this browser. Please type symptoms into the text field.");
+            return;
+        }
+
+        if (isListening) {
+            if (recognitionRef.current) {
+                recognitionRef.current.stop();
+            }
+            setIsListening(false);
+            setSuccessMsg("⏹️ Voice recording stopped.");
+            setTimeout(() => setSuccessMsg(""), 3000);
+            return;
+        }
+
+        try {
+            const recognition = new SpeechRecognitionClass();
+            recognitionRef.current = recognition;
+            recognition.continuous = false;
+            recognition.interimResults = true;
+            recognition.lang = "en-US";
+
+            setIsListening(true);
+            setError("");
+            setSuccessMsg("🎤 Listening... Speak your breakdown symptoms clearly.");
+
+            recognition.onresult = (event: any) => {
+                let currentTranscript = "";
+                for (let i = event.resultIndex; i < event.results.length; i++) {
+                    currentTranscript += event.results[i][0].transcript;
+                }
+                if (currentTranscript) {
+                    setSymptoms(currentTranscript);
+                }
+            };
+
+            recognition.onerror = (err: any) => {
+                console.error("Speech recognition error:", err);
+                setIsListening(false);
+                setError("Microphone permission denied or speech unrecognized. Try again.");
+            };
+
+            recognition.onend = () => {
+                setIsListening(false);
+            };
+
+            recognition.start();
+        } catch (err) {
+            console.error("Voice input error:", err);
+            setIsListening(false);
+            setError("Unable to launch voice microphone recording.");
+        }
+    };
 
     /* 14 ML Telemetry fields */
     const [MAP, setMAP] = useState("1.044");
@@ -539,11 +603,21 @@ function Breakdown({ onBack, onComplete }: BreakdownProps) {
                         </div>
 
                         <div className="form-group" style={{ marginTop: "18px" }}>
-                            <label htmlFor="symptoms">Symptoms / Problem Description *</label>
+                            <div className="label-with-action-row">
+                                <label htmlFor="symptoms">Symptoms / Problem Description *</label>
+                                <button
+                                    type="button"
+                                    className={`btn-voice-input ${isListening ? "listening-active" : ""}`}
+                                    onClick={handleToggleVoiceInput}
+                                    title="Speak your problem description"
+                                >
+                                    {isListening ? "🔴 Listening... (Click to Stop)" : "🎤 Start Voice Recording"}
+                                </button>
+                            </div>
                             <textarea
                                 id="symptoms"
                                 rows={3}
-                                placeholder="Describe what happened (e.g. noise, smoke, power loss, click sound on start)..."
+                                placeholder="Describe what happened (e.g. 'My car suddenly stopped and the engine is making a clicking noise')..."
                                 value={symptoms}
                                 onChange={(e) => setSymptoms(e.target.value)}
                                 required
@@ -561,25 +635,54 @@ function Breakdown({ onBack, onComplete }: BreakdownProps) {
                             />
                         </div>
 
-                        {/* NEW: ENGINE & DAMAGE PHOTO UPLOADER OPTION */}
+                        {/* ENGINE & DAMAGE PHOTO UPLOADER OPTION */}
                         <div className="form-group photo-uploader-group">
-                            <label>📸 Upload Photos of Engine / Breakdown Damage (Optional)</label>
-                            <p className="photo-hint-text">Upload a picture of your engine bay, dashboard warning light, or damaged tire for AI vision analysis.</p>
+                            <label>📷 Vehicle Condition & Damage Photos (CV Visual Analysis)</label>
+                            <p className="photo-hint-text">Take or upload a photo of your engine bay, dashboard warning light, or damaged tire for visual diagnosis.</p>
 
                             {!enginePhoto ? (
-                                <div
-                                    className="photo-dropzone"
-                                    onClick={() => fileInputRef.current?.click()}
-                                >
-                                    <div className="dropzone-icon">📷</div>
-                                    <div className="dropzone-text">
-                                        <span>Click or drag image to upload engine / vehicle photo</span>
-                                        <small>Supports PNG, JPG, WEBP (Max 5MB)</small>
+                                <div className="photo-actions-box">
+                                    <div
+                                        className="photo-dropzone"
+                                        onClick={() => fileInputRef.current?.click()}
+                                    >
+                                        <div className="dropzone-icon">📷</div>
+                                        <div className="dropzone-text">
+                                            <span>Click or drag image to upload photo</span>
+                                            <small>Supports PNG, JPG, WEBP (Max 5MB)</small>
+                                        </div>
                                     </div>
+
+                                    <div className="photo-buttons-row">
+                                        <button
+                                            type="button"
+                                            className="btn-photo-action"
+                                            onClick={() => cameraInputRef.current?.click()}
+                                        >
+                                            📷 Take Photo
+                                        </button>
+                                        <button
+                                            type="button"
+                                            className="btn-photo-action btn-photo-secondary"
+                                            onClick={() => fileInputRef.current?.click()}
+                                        >
+                                            📁 Upload Image
+                                        </button>
+                                    </div>
+
                                     <input
                                         ref={fileInputRef}
                                         type="file"
                                         accept="image/*"
+                                        onChange={handleImageUpload}
+                                        style={{ display: "none" }}
+                                    />
+
+                                    <input
+                                        ref={cameraInputRef}
+                                        type="file"
+                                        accept="image/*"
+                                        capture="environment"
                                         onChange={handleImageUpload}
                                         style={{ display: "none" }}
                                     />

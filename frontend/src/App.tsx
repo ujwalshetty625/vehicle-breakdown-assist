@@ -40,18 +40,28 @@ function App() {
             const response = await assist(data);
             console.log("Assist response:", response);
 
+            const sevText = response.severity?.severity
+                ? response.severity.severity.charAt(0).toUpperCase() + response.severity.severity.slice(1)
+                : "Medium";
+
             const diagnosisResult: DiagnosisResult = {
                 fault: response.diagnosis.fault_name && response.diagnosis.fault_name !== "No Fault"
                     ? response.diagnosis.fault_name
                     : "Rich Mixture / Engine Misfire",
-                confidence: response.diagnosis.confidence > 0.5 ? response.diagnosis.confidence : 0.95,
-                severity: "High",
-                safetyRecommendation: response.assistance_required
-                    ? `Vehicle fault detected (${response.diagnosis.fault_name || 'Engine Misfire'}). Direct assistance is recommended. Connect with nearest provider below.`
-                    : "If the vehicle is safe to drive, proceed with caution to the nearest authorized service center.",
+                confidence: response.diagnosis.confidence ?? 0.88,
+                severity: sevText,
+                safeToDrive: response.severity?.safe_to_drive,
+                lowConfidence: response.severity?.low_confidence,
+                advisory: response.severity?.advisory,
+                safetyRecommendation: response.roadside_safety?.guidance
+                    || response.severity?.advisory
+                    || (response.assistance_required
+                        ? `Vehicle fault detected (${response.diagnosis.fault_name || 'Engine Misfire'}). Direct assistance is recommended.`
+                        : "If the vehicle is safe to drive, proceed with caution to the nearest authorized service center."),
+                roadsideSafety: response.roadside_safety,
                 assistanceRequired: response.assistance_required
                     ? "Assistance Required"
-                    : "Assistance Recommended",
+                    : "No Assistance Required",
                 faultType: response.diagnosis.fault_type || 1,
                 classProbabilities: response.diagnosis.class_probabilities,
                 requiredCapability: response.required_capability || "engine_repair",

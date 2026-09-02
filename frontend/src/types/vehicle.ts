@@ -90,12 +90,33 @@ export interface BreakdownData {
     AFR: number;
 }
 
+export interface SeverityInfo {
+    severity: "low" | "medium" | "high" | "critical" | string;
+    safe_to_drive: boolean;
+    low_confidence: boolean;
+    advisory: string;
+}
+
+export interface RoadsideSafetyInfo {
+    risk_level: "low" | "medium" | "high" | "critical" | string;
+    guidance: string;
+    eta_estimate: string;
+    distance_interpretation: string;
+    is_night: boolean;
+    context_note: string;
+}
+
 export interface DiagnosisResult {
     fault: string;
     confidence: number;
 
     severity: string;
+    safeToDrive?: boolean;
+    lowConfidence?: boolean;
+    advisory?: string;
+
     safetyRecommendation: string;
+    roadsideSafety?: RoadsideSafetyInfo;
 
     assistanceRequired: string;
 
@@ -159,6 +180,9 @@ export interface AssistResponse {
         confidence: number;
         class_probabilities: number[];
     };
+
+    severity?: SeverityInfo;
+    roadside_safety?: RoadsideSafetyInfo;
 
     assistance_required: boolean;
     required_capability: string | null;

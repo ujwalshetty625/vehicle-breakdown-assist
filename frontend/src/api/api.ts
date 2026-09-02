@@ -227,6 +227,28 @@ export const autoScanVehicleECU = async (
  * =========================================================
  */
 
+const DEFAULT_TELEMETRY = {
+    MAP: 35.2,
+    TPS: 12.5,
+    Force: 120.0,
+    Power: 80.0,
+    RPM: 2500.0,
+    consumption_lh: 2.5,
+    consumption_l100km: 8.5,
+    Speed: 60.0,
+    CO: 0.2,
+    HC: 100.0,
+    CO2: 14.5,
+    O2: 1.2,
+    Lambda: 1.0,
+    AFR: 14.7,
+};
+
+const sanitizeTelemetry = (val: number | undefined, defaultVal: number): number => {
+    const num = Number(val);
+    return !isNaN(num) && num !== 0 ? num : defaultVal;
+};
+
 export const assist = async (
     data: BreakdownData
 ): Promise<AssistResponse> => {
@@ -242,21 +264,21 @@ export const assist = async (
         longitude: data.longitude ?? 77.6265,
         engine_photo: data.enginePhoto || null,
 
-        /* 14 ML telemetry values */
-        MAP: Number(data.MAP) || 0,
-        TPS: Number(data.TPS) || 0,
-        Force: Number(data.Force) || 0,
-        Power: Number(data.Power) || 0,
-        RPM: Number(data.RPM) || 0,
-        consumption_lh: Number(data.consumption_lh) || 0,
-        consumption_l100km: Number(data.consumption_l100km) || 0,
-        Speed: Number(data.Speed) || 0,
-        CO: Number(data.CO) || 0,
-        HC: Number(data.HC) || 0,
-        CO2: Number(data.CO2) || 0,
-        O2: Number(data.O2) || 0,
-        Lambda: Number(data.Lambda) || 0,
-        AFR: Number(data.AFR) || 0,
+        /* 14 ML telemetry values - sanitized so missing/zero values don't distort ML diagnosis */
+        MAP: sanitizeTelemetry(data.MAP, DEFAULT_TELEMETRY.MAP),
+        TPS: sanitizeTelemetry(data.TPS, DEFAULT_TELEMETRY.TPS),
+        Force: sanitizeTelemetry(data.Force, DEFAULT_TELEMETRY.Force),
+        Power: sanitizeTelemetry(data.Power, DEFAULT_TELEMETRY.Power),
+        RPM: sanitizeTelemetry(data.RPM, DEFAULT_TELEMETRY.RPM),
+        consumption_lh: sanitizeTelemetry(data.consumption_lh, DEFAULT_TELEMETRY.consumption_lh),
+        consumption_l100km: sanitizeTelemetry(data.consumption_l100km, DEFAULT_TELEMETRY.consumption_l100km),
+        Speed: sanitizeTelemetry(data.Speed, DEFAULT_TELEMETRY.Speed),
+        CO: sanitizeTelemetry(data.CO, DEFAULT_TELEMETRY.CO),
+        HC: sanitizeTelemetry(data.HC, DEFAULT_TELEMETRY.HC),
+        CO2: sanitizeTelemetry(data.CO2, DEFAULT_TELEMETRY.CO2),
+        O2: sanitizeTelemetry(data.O2, DEFAULT_TELEMETRY.O2),
+        Lambda: sanitizeTelemetry(data.Lambda, DEFAULT_TELEMETRY.Lambda),
+        AFR: sanitizeTelemetry(data.AFR, DEFAULT_TELEMETRY.AFR),
     };
 
     console.log("========== POST /assist ==========", payload);
