@@ -1,84 +1,118 @@
-import { Activity, ArrowRight, ShieldCheck, Wrench } from "lucide-react";
+import { Activity, ArrowRight, ShieldCheck, Wrench, Car, Zap, MapPin } from "lucide-react";
 
 function Home({ onReport }: { onReport: () => void }) {
     return (
         <div className="home-page">
-            <nav className="navbar">
+            <nav className="navbar glass-card">
                 <div className="logo">
-                    <Activity size={28} />
-                    <span>RoadGuard AI</span>
+                    <div className="logo-icon">
+                        <Activity size={26} />
+                    </div>
+                    <div className="logo-text">
+                        <span className="logo-title">RoadGuard AI</span>
+                        <span className="logo-subtitle">Breakdown Assist</span>
+                    </div>
                 </div>
 
-                <button className="nav-button" onClick={onReport}>
-                    Report Breakdown
-                </button>
+                <div className="nav-actions">
+                    <span className="status-badge">
+                        <span className="pulse-dot green-dot" /> 24/7 Active Dispatch
+                    </span>
+                    <button className="nav-button glow-btn" onClick={onReport}>
+                        🚨 Emergency Assist
+                    </button>
+                </div>
             </nav>
 
             <main className="hero">
                 <div className="hero-content">
-                    <div className="badge">
+                    <div className="badge-pill hero-badge">
                         <ShieldCheck size={16} />
-                        Intelligent Roadside Recovery
+                        Next-Gen Vehicle Breakdown & Diagnostics
                     </div>
 
                     <h1>
-                        Smarter Help When
+                        Instant AI Diagnosis &
                         <br />
-                        Your Vehicle Breaks Down
+                        <span className="gradient-text">Roadside Assistance Dispatch</span>
                     </h1>
 
                     <p>
-                        RoadGuard AI analyzes your vehicle breakdown, estimates the
-                        possible fault, determines the assistance required, and helps
-                        find the most suitable roadside service.
+                        Stuck on the road? RoadGuard AI auto-scans vehicle telemetry, accurately predicts faults using trained machine learning models, and dispatches the nearest compatible mechanic or towing service across Bengaluru.
                     </p>
 
-                    <button className="primary-button" onClick={onReport}>
-                        Report a Breakdown
-                        <ArrowRight size={20} />
-                    </button>
+                    <div className="hero-cta-group">
+                        <button className="primary-button hero-cta-btn" onClick={onReport}>
+                            <span>Report Breakdown Now</span>
+                            <ArrowRight size={20} />
+                        </button>
+                        <span className="cta-subtext">⚡ 1-Click Automated OBD-II ECU Telemetry Fetching</span>
+                    </div>
                 </div>
 
-                <div className="hero-card">
-                    <div className="card-icon">
-                        <Wrench size={32} />
+                <div className="hero-card glass-card">
+                    <div className="card-icon-wrapper">
+                        <Wrench size={36} />
                     </div>
 
-                    <h3>Intelligent Recovery</h3>
+                    <h3>Smart Recovery Engine</h3>
 
-                    <p>
-                        Predict → Diagnose → Assist → Recover
+                    <p className="pipeline-steps">
+                        Telematics → ML Fault Engine → Capability Matching → Dispatch
                     </p>
 
-                    <div className="status">
-                        <span className="status-dot"></span>
-                        System Ready
+                    <div className="stats-row">
+                        <div className="stat-item">
+                            <span className="stat-number">19</span>
+                            <span className="stat-label">Vehicle Types</span>
+                        </div>
+                        <div className="stat-divider" />
+                        <div className="stat-item">
+                            <span className="stat-number">12+</span>
+                            <span className="stat-label">Providers</span>
+                        </div>
+                        <div className="stat-divider" />
+                        <div className="stat-item">
+                            <span className="stat-number">&lt; 15m</span>
+                            <span className="stat-label">Avg Arrival</span>
+                        </div>
+                    </div>
+
+                    <div className="system-ready-indicator">
+                        <span className="status-dot green-dot" />
+                        Backend DB & ML Engine Connected
                     </div>
                 </div>
             </main>
 
-            <section className="features">
-                <div className="feature-card">
-                    <Activity size={24} />
-                    <h3>AI Diagnosis</h3>
+            <section className="features-grid">
+                <div className="feature-card glass-card">
+                    <div className="feature-icon cyan-icon">
+                        <Zap size={28} />
+                    </div>
+                    <h3>Automated Telemetry Fetching</h3>
                     <p>
-                        Estimate possible vehicle faults and communicate confidence.
+                        No manual data entry required. Automatically fetch diagnostic telemetry (RPM, AFR, MAP, emissions) directly from backend vehicle databases.
                     </p>
                 </div>
 
-                <div className="feature-card">
-                    <ShieldCheck size={24} />
-                    <h3>Safety First</h3>
+                <div className="feature-card glass-card">
+                    <div className="feature-icon green-icon">
+                        <Car size={28} />
+                    </div>
+                    <h3>All 19 Vehicle Types Supported</h3>
                     <p>
-                        Consider breakdown severity and roadside safety conditions.
+                        From motorcycles, scooters, auto-rickshaws, and passenger sedans to commercial heavy trucks, buses, and tractors.
                     </p>
                 </div>
 
-                <div className="feature-card">
-                    <Wrench size={24} />
-                    <h3>Smart Assistance</h3>
+                <div className="feature-card glass-card">
+                    <div className="feature-icon orange-icon">
+                        <MapPin size={28} />
+                    </div>
+                    <h3>Instant Replan & Dispatch</h3>
                     <p>
-                        Match the breakdown with the appropriate roadside assistance.
+                        Automated distance-based provider matching in Bengaluru with instant re-assignment capabilities if primary providers are occupied.
                     </p>
                 </div>
             </section>

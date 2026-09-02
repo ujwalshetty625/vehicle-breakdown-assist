@@ -12,6 +12,10 @@ class MatchedProviderOut(BaseModel):
     distance_km: float
     rating: float
     score: float
+    latitude: float = 0.0
+    longitude: float = 0.0
+    capabilities: list[str] = []
+    vehicle_types: list[str] = []
 
 class MatchResponse(BaseModel):
     matched: bool
@@ -19,4 +23,3 @@ class MatchResponse(BaseModel):
     assignment_id: int | None = None
     assigned_provider: MatchedProviderOut | None
     ranked_candidates: list[MatchedProviderOut]
-
