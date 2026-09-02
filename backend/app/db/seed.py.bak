@@ -278,8 +278,6 @@ def seed():
                 latitude=p["lat"],
                 longitude=p["lng"],
                 rating=p["rating"],
-        phone=p.get("phone"),
-        email=p.get("email"),
                 is_available=True,
             )
 

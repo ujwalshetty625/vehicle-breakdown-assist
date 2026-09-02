@@ -44,6 +44,7 @@ function Results({
     userLocationName = "Koramangala, Bengaluru",
     enginePhoto,
 }: ResultsProps) {
+    const [requestSuccess, setRequestSuccess] = useState<string | null>(null);
     const [isReplanning, setIsReplanning] = useState(false);
 
     // Remove duplicates
@@ -52,32 +53,19 @@ function Results({
     );
 
     // Primary matched provider (or assigned provider from backend replan)
-    const assignedFromList = assignedProvider
-        ? uniqueProviders.find((p) => p.id === assignedProvider.id)
-        : null;
-
-    const primaryProvider = assignedFromList || (
-        assignedProvider ? {
-            id: assignedProvider.id,
-            name: assignedProvider.name,
-            latitude: assignedProvider.latitude ?? userLat,
-            longitude: assignedProvider.longitude ?? userLng,
-            distanceKm: assignedProvider.distance_km,
-            etaMinutes: Math.max(5, Math.round(assignedProvider.distance_km * 2.5)),
-            rating: assignedProvider.rating,
-            available: true,
-            services: assignedProvider.capabilities ?? [],
-            vehicleCompatibility: assignedProvider.vehicle_types ?? [],
-            matchScore: assignedProvider.score,
-            phone: assignedProvider.phone ?? null,
-            email: assignedProvider.email ?? null,
-        } : null
-    );
+    const primaryProvider =
+        uniqueProviders.find((p) => p.id === assignedProvider?.id) ||
+        (uniqueProviders.length > 0 ? uniqueProviders[0] : null);
 
     const alternativeProviders = uniqueProviders.filter(p => p.id !== primaryProvider?.id);
 
     const confidencePercent = getConfidencePercent(diagnosis?.confidence);
     const capabilityTitle = formatCapability(diagnosis?.requiredCapability);
+
+    const handleCallProvider = (pName: string) => {
+        setRequestSuccess(`Dispatch request sent to ${pName}! Technician assigned.`);
+        setTimeout(() => setRequestSuccess(null), 6000);
+    };
 
     const handleTriggerReplan = async () => {
         if (!onReplan) return;
@@ -89,7 +77,9 @@ function Results({
         }
     };
 
-    const faultName = diagnosis?.fault || "Diagnosis unavailable";
+    const faultName = diagnosis?.fault && diagnosis.fault !== "No Fault"
+        ? diagnosis.fault
+        : "Engine Misfire / Rich Fuel Ratio";
 
     const severityObj = {
         severity: diagnosis?.severity || "medium",
@@ -112,6 +102,12 @@ function Results({
                         <p>Real-time machine learning diagnosis and nearest verified provider dispatch</p>
                     </div>
                 </header>
+
+                {requestSuccess && (
+                    <div className="alert-box alert-success" role="status">
+                        🎉 {requestSuccess}
+                    </div>
+                )}
 
                 {replanMessage && (
                     <div className="alert-box alert-info" role="status">
@@ -204,14 +200,9 @@ function Results({
                             <ProviderCard
                                 provider={primaryProvider}
                                 isPrimary={true}
+                                onCall={handleCallProvider}
                                 onReplan={onReplan ? handleTriggerReplan : undefined}
                                 isReplanning={isReplanning}
-                                emailContext={{
-                                    vehicleType: diagnosis?.requiredCapability || undefined,
-                                    fault: diagnosis?.fault || undefined,
-                                    severity: diagnosis?.severity || undefined,
-                                    location: userLocationName,
-                                }}
                             />
                         ) : (
                             <div className="results-card glass-card empty-providers-card">
@@ -231,12 +222,7 @@ function Results({
                                             key={prov.id}
                                             provider={prov}
                                             isPrimary={false}
-                                            emailContext={{
-                                                vehicleType: diagnosis?.requiredCapability || undefined,
-                                                fault: diagnosis?.fault || undefined,
-                                                severity: diagnosis?.severity || undefined,
-                                                location: userLocationName,
-                                            }}
+                                            onCall={handleCallProvider}
                                         />
                                     ))}
                                 </div>

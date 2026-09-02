@@ -157,8 +157,6 @@ def assist(
         MatchedProviderOut(
             id=provider.id,
             name=provider.name,
-            phone=provider.phone,
-            email=provider.email,
             distance_km=round(distance, 2),
             rating=provider.rating,
             score=round(score, 2),

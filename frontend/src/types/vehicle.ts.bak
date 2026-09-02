@@ -129,8 +129,6 @@ export interface DiagnosisResult {
 export interface Provider {
     id: number;
     name: string;
-    phone?: string | null;
-    email?: string | null;
 
     latitude: number;
     longitude: number;
@@ -162,8 +160,6 @@ export interface MatchedProvider {
 export interface BackendProvider {
     id: number;
     name: string;
-    phone?: string | null;
-    email?: string | null;
 
     latitude: number;
     longitude: number;

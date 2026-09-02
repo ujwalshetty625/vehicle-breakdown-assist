@@ -88,8 +88,6 @@ const mapBackendProvider = (
     return {
         id: provider.id,
         name: provider.name,
-        phone: provider.phone ?? null,
-        email: provider.email ?? null,
         latitude: provider.latitude,
         longitude: provider.longitude,
         distanceKm: dist,

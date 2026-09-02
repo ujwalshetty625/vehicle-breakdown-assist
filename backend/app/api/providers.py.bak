@@ -15,8 +15,6 @@ def list_providers(db: Session = Depends(get_db)):
             ProviderOut(
                 id=p.id,
                 name=p.name,
-                phone=p.phone,
-                email=p.email,
                 latitude=p.latitude,
                 longitude=p.longitude,
                 vehicle_types=[vt.name for vt in p.vehicle_types],

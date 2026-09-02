@@ -70,8 +70,6 @@ def replan(request: ReplanRequest, db: Session = Depends(get_db)):
         MatchedProviderOut(
             id=p.id,
             name=p.name,
-            phone=p.phone,
-            email=p.email,
             distance_km=round(dist, 2),
             rating=p.rating,
             score=round(score, 2),
