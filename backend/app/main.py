@@ -29,4 +29,8 @@ app.include_router(diagnostics_router)
 
 @app.get("/")
 def root():
-    return {"message": "Vehicle Breakdown Assist API is running"}
+    return {"status": "ok", "message": "Vehicle Breakdown Assist API is running"}
+
+@app.get("/health")
+def health():
+    return {"status": "healthy", "service": "vehicle-breakdown-assist"}

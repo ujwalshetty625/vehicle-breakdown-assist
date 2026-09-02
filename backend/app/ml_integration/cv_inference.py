@@ -12,19 +12,20 @@ PROJECT_ROOT = Path(__file__).resolve().parents[3]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
-from ml.src.cv_inference import WarningLightPredictor
-
-
 # Load the CV model lazily.
 # This prevents the model from loading until an image is actually analyzed.
-_predictor: Optional[WarningLightPredictor] = None
+_predictor: Optional[Any] = None
 
 
-def _get_predictor() -> WarningLightPredictor:
+def _get_predictor() -> Any:
     global _predictor
 
     if _predictor is None:
-        _predictor = WarningLightPredictor()
+        try:
+            from ml.src.cv_inference import WarningLightPredictor
+            _predictor = WarningLightPredictor()
+        except ImportError as e:
+            raise ValueError(f"Computer Vision inference module unavailable ({e})")
 
     return _predictor
 

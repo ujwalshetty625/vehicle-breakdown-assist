@@ -11,12 +11,25 @@ export default function SafetyCard({
     roadsideSafety,
     faultName = "Detected Fault",
 }: SafetyCardProps) {
-    const severity = severityInfo?.severity || "medium";
-    const safeToDrive = severityInfo?.safe_to_drive ?? true;
-    const riskLevel = roadsideSafety?.risk_level || "low";
-    const guidance = roadsideSafety?.guidance || severityInfo?.advisory || "Exercise caution on roadside.";
+    const rawSeverity = (severityInfo?.severity || "medium").toLowerCase();
+    const severity = severityInfo?.severity || rawSeverity;
+    
+    // Determine safeToDrive: false if severity is high/critical or backend says false
+    const safeToDrive = severityInfo?.safe_to_drive !== undefined
+        ? severityInfo.safe_to_drive
+        : (rawSeverity !== "high" && rawSeverity !== "critical");
+
+    // Determine riskLevel: elevated/high if safeToDrive is false or backend says elevated/high/critical
+    const riskLevel = roadsideSafety?.risk_level
+        ? roadsideSafety.risk_level
+        : (!safeToDrive || rawSeverity === "high" || rawSeverity === "critical" ? "high" : "low");
+
+    const guidance = roadsideSafety?.guidance
+        || (!safeToDrive
+            ? "Do not continue driving. Prioritize waiting safely for assistance. Keep hazard lights on and remain visible while waiting."
+            : "Vehicle can be operated with caution to the nearest authorized repair facility. Drive at low speed.");
+
     const etaEstimate = roadsideSafety?.eta_estimate || "15-25 min";
-    const contextNote = roadsideSafety?.context_note || "";
     const isNight = roadsideSafety?.is_night ?? false;
 
     const getRiskColorClass = (risk: string) => {
@@ -24,8 +37,10 @@ export default function SafetyCard({
             case "critical":
                 return "risk-critical";
             case "high":
+            case "elevated":
                 return "risk-high";
             case "medium":
+            case "moderate":
                 return "risk-medium";
             default:
                 return "risk-low";
@@ -55,6 +70,18 @@ export default function SafetyCard({
                     <p className="guidance-text">{guidance}</p>
                 </div>
 
+                <div className="safety-actions-box" style={{ background: "#f8fafc", padding: "10px 12px", borderRadius: "8px", border: "1px solid #e2e8f0" }}>
+                    <span style={{ fontSize: "0.725rem", color: "#64748b", fontWeight: "700", textTransform: "uppercase", display: "block", marginBottom: "6px" }}>
+                        ⚡ Recommended Safety Checklist
+                    </span>
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "6px", fontSize: "0.775rem", color: "#334155" }}>
+                        <span>⚠️ Turn on Hazard Lights</span>
+                        <span>🛡️ Remain in safe location</span>
+                        <span>🦺 Stay visible to traffic</span>
+                        <span>📱 Keep emergency phone ready</span>
+                    </div>
+                </div>
+
                 <div className="safety-meta-grid">
                     <div className="safety-meta-item">
                         <span className="meta-label">Estimated Provider ETA</span>
@@ -79,12 +106,6 @@ export default function SafetyCard({
                     </div>
                 </div>
 
-                {contextNote && (
-                    <div className="context-note-banner">
-                        <span className="note-icon">💡</span>
-                        <span className="note-text">{contextNote}</span>
-                    </div>
-                )}
             </div>
         </div>
     );

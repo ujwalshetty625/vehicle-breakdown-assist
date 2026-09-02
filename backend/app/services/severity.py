@@ -3,6 +3,8 @@ SEVERITY_MAP = {
     "Rich Mixture": {"severity": "medium", "safe_to_drive": True},
     "Lean Mixture": {"severity": "high", "safe_to_drive": False},  # can damage engine if driven
     "Low Voltage": {"severity": "high", "safe_to_drive": False},   # risk of stalling/no restart
+    "Flat Tire / Puncture Damage": {"severity": "medium", "safe_to_drive": False},
+    "Flat Tire": {"severity": "medium", "safe_to_drive": False},
 }
 
 LOW_CONFIDENCE_THRESHOLD = 0.55  # below this, model is likely guessing (see model_card.md F1 scores)

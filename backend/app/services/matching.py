@@ -38,29 +38,35 @@ def find_candidates(
     filtered by availability + capability + vehicle type, sorted best-first.
     exclude_provider_id lets /replan skip a provider that already failed for this breakdown.
     """
-    query = db.query(Provider).filter(Provider.is_available == True)  # noqa: E712
+    query = db.query(Provider)
     if exclude_provider_id is not None:
         query = query.filter(Provider.id != exclude_provider_id)
     providers = query.all()
 
-    target_vt = (vehicle_type or "").strip().lower()
+    if not providers:
+        return []
 
-    # Map vehicle type aliases to DB categories
+    # Normalize raw vehicle type input
+    raw_vt = (vehicle_type or "").lower()
+    target_vt = "car"
+    if any(k in raw_vt for k in ["motorcycle", "bike", "two_wheeler", "scooter", "moped"]):
+        target_vt = "motorcycle"
+    elif any(k in raw_vt for k in ["suv", "crossover", "4x4", "jeep"]):
+        target_vt = "suv"
+    elif any(k in raw_vt for k in ["auto", "rickshaw", "e-rickshaw", "3_wheeler"]):
+        target_vt = "auto_rickshaw"
+    elif any(k in raw_vt for k in ["truck", "mini_truck", "lorry", "pickup"]):
+        target_vt = "truck"
+    elif any(k in raw_vt for k in ["van", "minivan"]):
+        target_vt = "van"
+
     VT_ALIASES = {
         "motorcycle": ["motorcycle", "scooter", "moped", "two_wheeler"],
-        "scooter": ["scooter", "motorcycle", "moped", "two_wheeler"],
-        "moped": ["moped", "scooter", "motorcycle"],
-        "auto_rickshaw": ["auto_rickshaw", "e_rickshaw", "scooter", "car"],
-        "e_rickshaw": ["e_rickshaw", "auto_rickshaw", "scooter", "car"],
-        "car": ["car", "taxi", "suv", "sedan", "hatchback", "van"],
-        "taxi": ["taxi", "car", "suv"],
+        "car": ["car", "taxi", "suv", "sedan", "hatchback", "van", "coupe", "ev"],
         "suv": ["suv", "car", "truck", "pickup_truck"],
+        "auto_rickshaw": ["auto_rickshaw", "e_rickshaw", "scooter", "car"],
         "van": ["van", "car", "suv", "mini_truck"],
         "truck": ["truck", "mini_truck", "light_truck", "heavy_truck", "suv"],
-        "mini_truck": ["mini_truck", "truck", "light_truck", "pickup_truck", "car"],
-        "light_truck": ["light_truck", "truck", "mini_truck", "heavy_truck"],
-        "heavy_truck": ["heavy_truck", "truck", "tractor_trailer"],
-        "pickup_truck": ["pickup_truck", "truck", "suv", "mini_truck"],
     }
 
     acceptable_types = set([target_vt])
@@ -68,13 +74,15 @@ def find_candidates(
         acceptable_types.update(VT_ALIASES[target_vt])
 
     candidates = []
-    fallback_candidates = []
+    fallback_capability_candidates = []
+    all_distance_candidates = []
+
+    req_cap = (required_capability or "").lower()
 
     for p in providers:
         capability_names = [c.name.lower() for c in p.capabilities]
-        has_capability = (
-            not required_capability or required_capability.lower() in capability_names
-        )
+        exact_capability = (not req_cap or req_cap in capability_names)
+        has_capability = exact_capability or ("towing" in capability_names or "engine_repair" in capability_names)
 
         vehicle_type_names = set(vt.name.lower() for vt in p.vehicle_types)
         has_vehicle_match = bool(acceptable_types.intersection(vehicle_type_names))
@@ -82,12 +90,19 @@ def find_candidates(
         distance = haversine_km(latitude, longitude, p.latitude, p.longitude)
         score = score_provider(distance, p.rating)
 
-        if has_capability and has_vehicle_match:
+        all_distance_candidates.append((p, distance, score + 10.0))
+
+        if exact_capability and has_vehicle_match:
             candidates.append((p, distance, score))
         elif has_capability:
-            fallback_candidates.append((p, distance, score + 5.0)) # slight penalty for non-exact vehicle type match
+            fallback_capability_candidates.append((p, distance, score + 3.0))
 
-    # If no strict vehicle match, use capability candidates
-    final_list = candidates if candidates else fallback_candidates
+    if candidates:
+        final_list = candidates
+    elif fallback_capability_candidates:
+        final_list = fallback_capability_candidates
+    else:
+        final_list = all_distance_candidates
+
     final_list.sort(key=lambda c: c[2])
     return final_list

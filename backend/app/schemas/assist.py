@@ -1,9 +1,11 @@
 from typing import Optional
-from pydantic import BaseModel
+from pydantic import BaseModel, Field, ConfigDict
 
 
 class AssistRequest(BaseModel):
-    vehicle_type: str = "car"
+    model_config = ConfigDict(populate_by_name=True, extra="ignore")
+
+    vehicle_type: str = Field(default="car", alias="vehicleType")
     latitude: float = 12.9716
     longitude: float = 77.5946
 
@@ -24,11 +26,11 @@ class AssistRequest(BaseModel):
     AFR: float = 14.7
 
     # Contextual vehicle & breakdown info
-    vehicle_model: Optional[str] = None
-    vehicle_year: Optional[str] = None
-    fuel_type: Optional[str] = None
+    vehicle_model: Optional[str] = Field(default=None, alias="vehicleModel")
+    vehicle_year: Optional[str] = Field(default=None, alias="vehicleYear")
+    fuel_type: Optional[str] = Field(default=None, alias="fuelType")
     symptoms: Optional[str] = None
-    warning_light: Optional[str] = None
+    warning_light: Optional[str] = Field(default=None, alias="warningLight")
     location: Optional[str] = None
-    diagnostic_preset_id: Optional[str] = None
-    engine_photo: Optional[str] = None
+    diagnostic_preset_id: Optional[str] = Field(default=None, alias="diagnosticPresetId")
+    engine_photo: Optional[str] = Field(default=None, alias="enginePhoto")

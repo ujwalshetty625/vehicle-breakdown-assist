@@ -58,7 +58,7 @@ const QUICK_SYMPTOMS = [
         icon: "🛑",
         symptomText: "Flat tire on roadside, loss of tire pressure, wheel vibrating.",
         warning: "TPMS Low Pressure Light",
-        presetId: "preset_normal"
+        presetId: "preset_tire_damage"
     }
 ];
 
@@ -229,13 +229,49 @@ function Breakdown({ onBack, onComplete }: BreakdownProps) {
         setSelectedPresetId(preset.id);
     };
 
+    // Built-in fallback preset telemetry mapping for instantaneous application
+    const BUILTIN_PRESETS: Record<string, DiagnosticPreset> = {
+        preset_low_voltage: {
+            id: "preset_low_voltage",
+            name: "Low Battery Voltage / Electrical Fault",
+            fault_name: "Low Voltage",
+            description: "Battery voltage drop",
+            symptoms: "Engine click",
+            telemetry: { MAP: 1.685, TPS: 0.983, Force: 283.63, Power: 3.236, RPM: 1878.75, consumption_lh: 3.202, consumption_l100km: 7.952, Speed: 40.384, CO: 0.462, HC: 214.24, CO2: 12.971, O2: 0.87, Lambda: 1.04, AFR: 15.284 }
+        },
+        preset_rich_mixture: {
+            id: "preset_rich_mixture",
+            name: "Engine Misfire & Rich Mixture",
+            fault_name: "Rich Mixture",
+            description: "High CO levels",
+            symptoms: "Exhaust smoke",
+            telemetry: { MAP: 1.044, TPS: 0.769, Force: 80.04, Power: 0.497, RPM: 1188.55, consumption_lh: 1.989, consumption_l100km: 8.207, Speed: 25.038, CO: 1.925, HC: 247.44, CO2: 12.834, O2: 0.56, Lambda: 1.003, AFR: 14.75 }
+        },
+        preset_lean_mixture: {
+            id: "preset_lean_mixture",
+            name: "Lean Mixture / Air Intake Leak",
+            fault_name: "Lean Mixture",
+            description: "High O2 levels",
+            symptoms: "Surging idle",
+            telemetry: { MAP: 1.614, TPS: 1.095, Force: 78.864, Power: 1.844, RPM: 3566.67, consumption_lh: 4.489, consumption_l100km: 5.626, Speed: 77.641, CO: 0.722, HC: 148.625, CO2: 14.189, O2: 1.119, Lambda: 1.074, AFR: 15.788 }
+        },
+        preset_tire_damage: {
+            id: "preset_tire_damage",
+            name: "Flat Tire / Puncture Damage",
+            fault_name: "Flat Tire",
+            description: "Puncture",
+            symptoms: "Flat tire",
+            telemetry: { MAP: 3.549, TPS: 1.889, Force: 7.428, Power: 5.227, RPM: 1192.77, consumption_lh: 3.057, consumption_l100km: 11.72, Speed: 0.0, CO: 0.46, HC: 196.089, CO2: 14.356, O2: 1.08, Lambda: 1.047, AFR: 15.385 }
+        }
+    };
+
     // Handle Quick Symptom Click
     const handleQuickSymptomClick = (symptomItem: typeof QUICK_SYMPTOMS[0]) => {
         setActiveSymptomId(symptomItem.id);
         setSymptoms(symptomItem.symptomText);
         setWarningLight(symptomItem.warning);
 
-        const matchedPreset = presets.find((p) => p.id === symptomItem.presetId);
+        const matchedPreset = presets.find((p) => p.id === symptomItem.presetId) || BUILTIN_PRESETS[symptomItem.presetId];
         if (matchedPreset) {
             applyPresetValues(matchedPreset);
             setSuccessMsg(`⚡ Auto-configured OBD-II telemetry profile for "${symptomItem.title}"`);
@@ -377,18 +413,7 @@ function Breakdown({ onBack, onComplete }: BreakdownProps) {
             return;
         }
 
-        const breakdownData: BreakdownData = {
-            vehicleModel: vehicleModel.trim(),
-            vehicleYear: vehicleYear.trim() || "2022",
-            vehicleType,
-            fuelType,
-            symptoms: symptoms.trim(),
-            warningLight: warningLight.trim() || "Warning indicator light active",
-            location: location.trim() || "Koramangala, Bengaluru",
-            latitude: latitude ?? 12.9345,
-            longitude: longitude ?? 77.6265,
-            enginePhoto: enginePhoto || undefined,
-
+        let telemetryObj = {
             MAP: numberVal(MAP),
             TPS: numberVal(TPS),
             Force: numberVal(Force),
@@ -403,6 +428,33 @@ function Breakdown({ onBack, onComplete }: BreakdownProps) {
             O2: numberVal(O2),
             Lambda: numberVal(Lambda),
             AFR: numberVal(AFR),
+        };
+
+        if (!telemetryFetched) {
+            const sLower = `${symptoms} ${warningLight}`.toLowerCase();
+            if (sLower.includes("battery") || sLower.includes("click") || sLower.includes("voltage") || sLower.includes("dead")) {
+                telemetryObj = BUILTIN_PRESETS.preset_low_voltage.telemetry;
+            } else if (sLower.includes("tire") || sLower.includes("flat") || sLower.includes("puncture") || sLower.includes("wheel")) {
+                telemetryObj = BUILTIN_PRESETS.preset_tire_damage.telemetry;
+            } else if (sLower.includes("hesitat") || sLower.includes("surging") || sLower.includes("lean") || sLower.includes("vacuum")) {
+                telemetryObj = BUILTIN_PRESETS.preset_lean_mixture.telemetry;
+            } else if (sLower.includes("smoke") || sLower.includes("misfire") || sLower.includes("rich")) {
+                telemetryObj = BUILTIN_PRESETS.preset_rich_mixture.telemetry;
+            }
+        }
+
+        const breakdownData: BreakdownData = {
+            vehicleModel: vehicleModel.trim(),
+            vehicleYear: vehicleYear.trim() || "2022",
+            vehicleType,
+            fuelType,
+            symptoms: symptoms.trim(),
+            warningLight: warningLight.trim() || "Warning indicator light active",
+            location: location.trim() || "Koramangala, Bengaluru",
+            latitude: latitude ?? 12.9345,
+            longitude: longitude ?? 77.6265,
+            enginePhoto: enginePhoto || undefined,
+            ...telemetryObj,
         };
 
         setLoading(true);
@@ -502,10 +554,8 @@ function Breakdown({ onBack, onComplete }: BreakdownProps) {
                                 />
                             </div>
 
-                            <div className="form-group full-width-field">
-                                <label htmlFor="vehicleType">
-                                    Vehicle Type Category * <span className="helper-tag">Database Supported (19 types)</span>
-                                </label>
+                            <div className="form-group">
+                                <label htmlFor="vehicleType">Vehicle Type Category *</label>
                                 <select
                                     id="vehicleType"
                                     value={vehicleType}
@@ -556,17 +606,21 @@ function Breakdown({ onBack, onComplete }: BreakdownProps) {
                             </div>
 
                             <div className="form-group">
-                                <label htmlFor="fuelType">Fuel / Powertrain Type</label>
+                                <label htmlFor="fuelType">Fuel / Powertrain Type *</label>
                                 <select
                                     id="fuelType"
                                     value={fuelType}
+                                    className="styled-select"
                                     onChange={(e) => setFuelType(e.target.value)}
+                                    required
                                 >
-                                    <option value="Petrol">Petrol</option>
-                                    <option value="Diesel">Diesel</option>
-                                    <option value="Electric">Electric (EV)</option>
-                                    <option value="CNG">CNG</option>
-                                    <option value="Hybrid">Hybrid</option>
+                                    <option value="Petrol">⛽ Petrol (Gasoline)</option>
+                                    <option value="Diesel">⛽ Diesel</option>
+                                    <option value="Electric">⚡ Electric (EV)</option>
+                                    <option value="CNG">🍃 CNG (Compressed Natural Gas)</option>
+                                    <option value="Hybrid">🔋 Hybrid (Petrol + Electric)</option>
+                                    <option value="PHEV">🔋 Plug-in Hybrid (PHEV)</option>
+                                    <option value="LPG">🍃 LPG (Liquefied Petroleum Gas)</option>
                                 </select>
                             </div>
                         </div>

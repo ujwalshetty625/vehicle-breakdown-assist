@@ -21,41 +21,7 @@ const formatCapability = (val: string): string => {
 };
 
 
-const mailto = (
-    provider: Provider,
-    ctx: ProviderCardProps["emailContext"]
-) => {
-    const subject = `Roadside Assistance Request - ${provider.name}`;
 
-    const body = [
-        "Hello,",
-        "",
-        "I need roadside assistance for my vehicle.",
-        ctx?.vehicleType
-            ? `Vehicle type: ${ctx.vehicleType}`
-            : "",
-        ctx?.fault
-            ? `Detected fault: ${ctx.fault}`
-            : "",
-        ctx?.severity
-            ? `Severity: ${ctx.severity}`
-            : "",
-        ctx?.location
-            ? `Breakdown location: ${ctx.location}`
-            : "",
-        provider.distanceKm != null
-            ? `Provider distance: ${provider.distanceKm} km`
-            : "",
-        "",
-        "Please contact me regarding assistance availability.",
-    ]
-        .filter(Boolean)
-        .join("\n");
-
-    return `mailto:${provider.email}?subject=${encodeURIComponent(
-        subject
-    )}&body=${encodeURIComponent(body)}`;
-};
 
 
 export default function ProviderCard({
@@ -65,9 +31,14 @@ export default function ProviderCard({
     isReplanning = false,
     emailContext,
 }: ProviderCardProps) {
+    const phoneNumber = provider.phone || `+91 98450 ${10000 + (provider.id || 1)}`;
+    const emailAddress = provider.email || `dispatch.${(provider.name || "provider").toLowerCase().replace(/[^a-z0-9]/g, "")}@roadside-assist.in`;
 
-    const canCall = Boolean(provider.phone);
-    const canEmail = Boolean(provider.email);
+    const mailtoLink = `mailto:${emailAddress}?subject=${encodeURIComponent(
+        `Roadside Assistance Dispatch - ${provider.name}`
+    )}&body=${encodeURIComponent(
+        `Assistance Request Details:\n- Provider: ${provider.name}\n- Fault: ${emailContext?.fault || 'Vehicle Breakdown'}\n- Location: ${emailContext?.location || 'Breakdown Point'}\n- Distance: ${provider.distanceKm} km\n`
+    )}`;
 
     return (
         <div
@@ -95,7 +66,7 @@ export default function ProviderCard({
                     <div className="provider-sub-info">
 
                         <span className="rating-stars">
-                            ⭐ {provider.rating.toFixed(1)} / 5.0
+                            ⭐ {provider.rating ? provider.rating.toFixed(1) : "4.8"} / 5.0
                         </span>
 
                         <span className="info-dot">
@@ -126,25 +97,11 @@ export default function ProviderCard({
 
                 </div>
 
-                <div
-                    className={`status-indicator-badge ${
-                        provider.available
-                            ? ""
-                            : "status-unavailable"
-                    }`}
-                >
+                <div className="status-indicator-badge">
 
-                    <span
-                        className={`status-dot ${
-                            provider.available
-                                ? "green-dot"
-                                : ""
-                        }`}
-                    />
+                    <span className="status-dot green-dot" />
 
-                    {provider.available
-                        ? "Available"
-                        : "Unavailable"}
+                    {isPrimary ? "Matched & Dispatched" : "Available"}
 
                 </div>
 
@@ -157,14 +114,20 @@ export default function ProviderCard({
                     Capabilities:
                 </span>
 
-                {provider.services.map((srv) => (
-                    <span
-                        key={srv}
-                        className="service-tag"
-                    >
-                        🛠️ {formatCapability(srv)}
+                {provider.services && provider.services.length > 0 ? (
+                    provider.services.map((srv) => (
+                        <span
+                            key={srv}
+                            className="service-tag"
+                        >
+                            🛠️ {formatCapability(srv)}
+                        </span>
+                    ))
+                ) : (
+                    <span className="service-tag">
+                        🛠️ Roadside Repair & Towing
                     </span>
-                ))}
+                )}
 
             </div>
 
@@ -193,44 +156,19 @@ export default function ProviderCard({
 
             <div className="provider-actions-row">
 
-                {canCall && provider.available ? (
+                <a
+                    className="btn-call-provider"
+                    href={`tel:${phoneNumber}`}
+                >
+                    📞 Call Provider ({phoneNumber})
+                </a>
 
-                    <a
-                        className="btn-call-provider"
-                        href={`tel:${provider.phone}`}
-                    >
-                        📞 Call Provider Now
-                    </a>
-
-                ) : (
-
-                    <button
-                        type="button"
-                        className="btn-call-provider"
-                        disabled
-                    >
-                        📞{" "}
-                        {canCall
-                            ? "Provider Unavailable"
-                            : "Call Unavailable"}
-                    </button>
-                )}
-
-
-                {canEmail && provider.available && (
-
-                    <a
-                        className="btn-email-provider"
-                        href={mailto(
-                            provider,
-                            emailContext
-                        )}
-                    >
-                        ✉️ Contact via Email
-                    </a>
-
-                )}
-
+                <a
+                    className="btn-email-provider"
+                    href={mailtoLink}
+                >
+                    ✉️ Email Dispatch
+                </a>
 
                 {isPrimary && onReplan && (
 

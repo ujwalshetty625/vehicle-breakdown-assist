@@ -10,13 +10,13 @@ function Home({ onReport }: { onReport: () => void }) {
                     </div>
                     <div className="logo-text">
                         <span className="logo-title">RoadGuard AI</span>
-                        <span className="logo-subtitle">Breakdown Assist</span>
+                        <span className="logo-subtitle">24/7 Breakdown Assist</span>
                     </div>
                 </div>
 
                 <div className="nav-actions">
                     <span className="status-badge">
-                        <span className="pulse-dot green-dot" /> 24/7 Active Dispatch
+                        <span className="pulse-dot green-dot" /> Instant Assistance Active
                     </span>
                     <button className="nav-button glow-btn" onClick={onReport}>
                         🚨 Emergency Assist
@@ -28,25 +28,25 @@ function Home({ onReport }: { onReport: () => void }) {
                 <div className="hero-content">
                     <div className="badge-pill hero-badge">
                         <ShieldCheck size={16} />
-                        Next-Gen Vehicle Breakdown & Diagnostics
+                        24/7 Intelligent Roadside Assistance & Recovery
                     </div>
 
                     <h1>
-                        Instant AI Diagnosis &
+                        Stuck on the Road?
                         <br />
-                        <span className="gradient-text">Roadside Assistance Dispatch</span>
+                        <span className="gradient-text">Instant Diagnostics & Help Dispatch</span>
                     </h1>
 
                     <p>
-                        Stuck on the road? RoadGuard AI auto-scans vehicle telemetry, accurately predicts faults using trained machine learning models, and dispatches the nearest compatible mechanic or towing service across Bengaluru.
+                        Fast, reliable assistance whenever you experience a vehicle breakdown. Auto-scans vehicle telemetry, identifies breakdown causes, assesses safety risks, and dispatches certified nearby mechanics and towing services across Bengaluru.
                     </p>
 
                     <div className="hero-cta-group">
                         <button className="primary-button hero-cta-btn" onClick={onReport}>
-                            <span>Report Breakdown Now</span>
+                            <span>🚨 Request Emergency Assistance</span>
                             <ArrowRight size={20} />
                         </button>
-                        <span className="cta-subtext">⚡ 1-Click Automated OBD-II ECU Telemetry Fetching</span>
+                        <span className="cta-subtext">⚡ 1-Click Diagnostics & Verified Provider Matching</span>
                     </div>
                 </div>
 
@@ -55,32 +55,32 @@ function Home({ onReport }: { onReport: () => void }) {
                         <Wrench size={36} />
                     </div>
 
-                    <h3>Smart Recovery Engine</h3>
+                    <h3>Smart Emergency Dispatch Pipeline</h3>
 
                     <p className="pipeline-steps">
-                        Telematics → ML Fault Engine → Capability Matching → Dispatch
+                        Diagnostic Scan → Fault Analysis → Safety Assessment → Instant Mechanic Dispatch
                     </p>
 
                     <div className="stats-row">
                         <div className="stat-item">
-                            <span className="stat-number">19</span>
-                            <span className="stat-label">Vehicle Types</span>
+                            <span className="stat-number">24/7</span>
+                            <span className="stat-label">Roadside Support</span>
                         </div>
                         <div className="stat-divider" />
                         <div className="stat-item">
-                            <span className="stat-number">12+</span>
-                            <span className="stat-label">Providers</span>
+                            <span className="stat-number">Smart</span>
+                            <span className="stat-label">Fault Matching</span>
                         </div>
                         <div className="stat-divider" />
                         <div className="stat-item">
-                            <span className="stat-number">&lt; 15m</span>
-                            <span className="stat-label">Avg Arrival</span>
+                            <span className="stat-number">GPS</span>
+                            <span className="stat-label">Nearby Dispatch</span>
                         </div>
                     </div>
 
                     <div className="system-ready-indicator">
                         <span className="status-dot green-dot" />
-                        Backend DB & ML Engine Connected
+                        24/7 Roadside Assistance Network Ready
                     </div>
                 </div>
             </main>
@@ -90,9 +90,9 @@ function Home({ onReport }: { onReport: () => void }) {
                     <div className="feature-icon cyan-icon">
                         <Zap size={28} />
                     </div>
-                    <h3>Automated Telemetry Fetching</h3>
+                    <h3>Instant Breakdown Diagnostics</h3>
                     <p>
-                        No manual data entry required. Automatically fetch diagnostic telemetry (RPM, AFR, MAP, emissions) directly from backend vehicle databases.
+                        Analyzes vehicle sensors, dashboard warning light photos, and symptoms to pinpoint the exact breakdown cause in seconds.
                     </p>
                 </div>
 
@@ -100,9 +100,9 @@ function Home({ onReport }: { onReport: () => void }) {
                     <div className="feature-icon green-icon">
                         <Car size={28} />
                     </div>
-                    <h3>All 19 Vehicle Types Supported</h3>
+                    <h3>Safety Protocol & Guidance</h3>
                     <p>
-                        From motorcycles, scooters, auto-rickshaws, and passenger sedans to commercial heavy trucks, buses, and tractors.
+                        Provides immediate driveability assessments (Safe to Drive vs Pull Over), severity risk ratings, and clear roadside waiting guidance.
                     </p>
                 </div>
 
@@ -110,9 +110,9 @@ function Home({ onReport }: { onReport: () => void }) {
                     <div className="feature-icon orange-icon">
                         <MapPin size={28} />
                     </div>
-                    <h3>Instant Replan & Dispatch</h3>
+                    <h3>Verified Nearby Mechanics</h3>
                     <p>
-                        Automated distance-based provider matching in Bengaluru with instant re-assignment capabilities if primary providers are occupied.
+                        Matches certified local providers in Bengaluru based on your vehicle's exact requirements (Battery Jumpstart, Towing, Tire Change, Engine Repair).
                     </p>
                 </div>
             </section>

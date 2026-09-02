@@ -40,31 +40,23 @@ function App() {
             const response = await assist(data);
             console.log("Assist response:", response);
 
-            const sevText = response.severity?.severity
-                ? response.severity.severity.charAt(0).toUpperCase() + response.severity.severity.slice(1)
-                : "Medium";
-
             const diagnosisResult: DiagnosisResult = {
-                fault: response.diagnosis.fault_name && response.diagnosis.fault_name !== "No Fault"
-                    ? response.diagnosis.fault_name
-                    : "Rich Mixture / Engine Misfire",
-                confidence: response.diagnosis.confidence ?? 0.88,
-                severity: sevText,
+                fault: response.diagnosis.fault_name,
+                confidence: response.diagnosis.confidence,
+                severity: response.severity?.severity
+                    ? response.severity.severity.charAt(0).toUpperCase() + response.severity.severity.slice(1)
+                    : "Medium",
                 safeToDrive: response.severity?.safe_to_drive,
                 lowConfidence: response.severity?.low_confidence,
                 advisory: response.severity?.advisory,
-                safetyRecommendation: response.roadside_safety?.guidance
-                    || response.severity?.advisory
-                    || (response.assistance_required
-                        ? `Vehicle fault detected (${response.diagnosis.fault_name || 'Engine Misfire'}). Direct assistance is recommended.`
-                        : "If the vehicle is safe to drive, proceed with caution to the nearest authorized service center."),
+                safetyRecommendation: response.roadside_safety?.guidance || response.severity?.advisory || "",
                 roadsideSafety: response.roadside_safety,
                 assistanceRequired: response.assistance_required
                     ? "Assistance Required"
                     : "No Assistance Required",
-                faultType: response.diagnosis.fault_type || 1,
+                faultType: response.diagnosis.fault_type,
                 classProbabilities: response.diagnosis.class_probabilities,
-                requiredCapability: response.required_capability || "engine_repair",
+                requiredCapability: response.required_capability,
             };
 
             setDiagnosis(diagnosisResult);
@@ -75,8 +67,8 @@ function App() {
 
             if (response.ranked_candidates && response.ranked_candidates.length > 0) {
                 rankedProviders = response.ranked_candidates.map((candidate) => {
-                    const cLat = candidate.latitude || 12.9716;
-                    const cLng = candidate.longitude || 77.5946;
+                    const cLat = candidate.latitude || userLat;
+                    const cLng = candidate.longitude || userLng;
                     const dist = candidate.distance_km && candidate.distance_km > 0
                         ? candidate.distance_km
                         : calculateDistanceKm(userLat, userLng, cLat, cLng);
@@ -90,20 +82,17 @@ function App() {
                         etaMinutes: Math.max(5, Math.round(dist * 2.5)),
                         rating: candidate.rating,
                         available: true,
-                        services: candidate.capabilities && candidate.capabilities.length > 0
-                            ? candidate.capabilities
-                            : response.required_capability ? [response.required_capability] : ["roadside_assistance"],
-                        vehicleCompatibility: candidate.vehicle_types && candidate.vehicle_types.length > 0
-                            ? candidate.vehicle_types
-                            : [data.vehicleType],
+                        services: candidate.capabilities || [],
+                        vehicleCompatibility: candidate.vehicle_types || [],
                         matchScore: candidate.score,
+                        phone: candidate.phone,
+                        email: candidate.email,
                     };
                 });
             }
 
             // Fallback: If ranked candidates list was empty, fetch all available providers from DB with true distance
             if (rankedProviders.length === 0) {
-                console.log("Fetching fallback provider directory from DB with exact distance...");
                 const allProviders = await getProviders(userLat, userLng);
                 rankedProviders = allProviders;
             }
@@ -111,21 +100,8 @@ function App() {
             setProviders(rankedProviders);
         } catch (error) {
             console.error("Assist request failed:", error);
-            try {
-                const fallbackList = await getProviders(userLat, userLng);
-                setProviders(fallbackList);
-            } catch (fallbackError) {
-                setProviders([]);
-            }
-
-            setDiagnosis({
-                fault: "Rich Mixture / Engine Misfire",
-                confidence: 0.95,
-                severity: "High",
-                safetyRecommendation: "Over-rich fuel ratio detected. Please remain stopped and request engine repair assistance.",
-                assistanceRequired: "Assistance Recommended",
-                requiredCapability: "engine_repair",
-            });
+            alert("Backend ML assistance server error. Please ensure FastAPI uvicorn server is running at http://127.0.0.1:8000.");
+            return;
         }
 
         setPage("results");
@@ -165,12 +141,8 @@ function App() {
                         etaMinutes: Math.max(5, Math.round(dist * 2.5)),
                         rating: c.rating,
                         available: true,
-                        services: c.capabilities && c.capabilities.length > 0
-                            ? c.capabilities
-                            : diagnosis?.requiredCapability ? [diagnosis.requiredCapability] : ["roadside_assistance"],
-                        vehicleCompatibility: c.vehicle_types && c.vehicle_types.length > 0
-                            ? c.vehicle_types
-                            : breakdownData ? [breakdownData.vehicleType] : ["car"],
+                        services: c.capabilities || [],
+                        vehicleCompatibility: c.vehicle_types || [],
                         matchScore: c.score,
                     };
                 });

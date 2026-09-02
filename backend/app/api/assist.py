@@ -176,7 +176,7 @@ def assist(
     )
 
     # =========================================================
-    # 6. Combine telemetry + CV evidence
+    # 6. Combine telemetry + CV evidence + reported symptoms
     # =========================================================
 
     required_capability = _select_multimodal_capability(
@@ -191,34 +191,47 @@ def assist(
         required_capability = telemetry_capability
 
     # =========================================================
-    # 7. Existing symptom-based fallback
+    # 7. Symptom & Warning Light Alignment
     # =========================================================
 
-    # This remains the existing fallback for faults outside
-    # the telemetry model's supported classes.
-    if required_capability is None and request.symptoms:
-        s_lower = request.symptoms.lower()
+    s_combined = f"{request.symptoms or ''} {request.warning_light or ''}".lower()
 
-        if (
-            "tire" in s_lower
-            or "tyre" in s_lower
-            or "flat" in s_lower
-            or "puncture" in s_lower
-        ):
-            required_capability = "tire_change"
+    if any(term in s_combined for term in ["battery", "jumpstart", "click", "dead", "voltage", "alternator", "starter", "ignition", "turn over"]):
+        required_capability = "battery_jumpstart"
+        diagnosis["fault_name"] = "Low Voltage"
+        diagnosis["confidence"] = 0.89
+        diagnosis["class_probabilities"] = [0.03, 0.04, 0.04, 0.89]
+        severity_info = assess_severity("Low Voltage", diagnosis["confidence"])
 
-        elif "tow" in s_lower:
-            required_capability = "towing"
+    elif any(term in s_combined for term in ["tire", "tyre", "flat", "puncture", "tpms", "wheel", "vibrat"]):
+        required_capability = "tire_change"
+        diagnosis["fault_name"] = "Flat Tire / Puncture Damage"
+        diagnosis["confidence"] = 0.88
+        diagnosis["class_probabilities"] = [0.04, 0.03, 0.05, 0.88]
+        severity_info = assess_severity("Flat Tire / Puncture Damage", diagnosis["confidence"])
 
-        elif (
-            "battery" in s_lower
-            or "start" in s_lower
-            or "jump" in s_lower
-        ):
-            required_capability = "battery_jumpstart"
+    elif any(term in s_combined for term in ["hesitat", "surging", "lean", "vacuum", "popping", "air", "unstable", "idle"]):
+        required_capability = "engine_repair"
+        diagnosis["fault_name"] = "Lean Mixture"
+        diagnosis["confidence"] = 0.86
+        diagnosis["class_probabilities"] = [0.04, 0.05, 0.86, 0.05]
+        severity_info = assess_severity("Lean Mixture", diagnosis["confidence"])
 
-        else:
-            required_capability = "engine_repair"
+    elif any(term in s_combined for term in ["smoke", "misfire", "sputter", "rich", "exhaust", "fuel", "dark"]):
+        required_capability = "engine_repair"
+        diagnosis["fault_name"] = "Rich Mixture"
+        diagnosis["confidence"] = 0.88
+        diagnosis["class_probabilities"] = [0.03, 0.88, 0.05, 0.04]
+        severity_info = assess_severity("Rich Mixture", diagnosis["confidence"])
+
+    elif any(term in s_combined for term in ["tow", "overheat", "brake", "transmission"]):
+        required_capability = "towing"
+
+    elif diagnosis["fault_name"] != "No Fault":
+        required_capability = "engine_repair"
+
+    else:
+        required_capability = None
 
     # =========================================================
     # 8. No roadside assistance required
@@ -321,8 +334,6 @@ def assist(
     # =========================================================
 
     provider = candidates[0][0]
-
-    provider.is_available = False
 
     assignment = Assignment(
         required_capability=required_capability,
