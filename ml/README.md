@@ -71,21 +71,21 @@ python ml/src/evaluate.py
 
 ---
 
-## 📊 Dataset & Model Performance Summary
+## 📊 Dataset & Model Performance Summary (v2)
 
-- **Source**: EngineFaultDB (55,999 total samples, 14 numeric sensor features)
-- **Partitions**: 44,799 Train (80%) / 11,200 Test (20%), Stratified
-- **Algorithm**: `RandomForestClassifier(n_estimators=200, class_weight='balanced', random_state=42)`
+- **Source**: EngineFaultDB (55,998 clean samples after deduplication, 14 numeric sensor features)
+- **Partitions**: 44,798 Train (80%) / 11,200 Test (20%), Stratified
+- **Algorithm**: `RandomForestClassifier(n_estimators=200, max_depth=25, class_weight='balanced', random_state=42)`
 
 ### Test Set Performance Metrics
 
 | Metric | Value |
 |:---|:---:|
-| **Overall Accuracy** | **74.40%** |
-| **Macro F1-Score** | **0.7528** |
-| **Weighted F1-Score** | **0.7439** |
-| **Macro Precision** | **0.7534** |
-| **Macro Recall** | **0.7534** |
+| **Overall Accuracy** | **74.76%** |
+| **Macro F1-Score** | **0.7556** |
+| **Weighted F1-Score** | **0.7464** |
+| **Macro Precision** | **0.7576** |
+| **Macro Recall** | **0.7575** |
 
 ### Per-Class Breakdown
 
@@ -93,8 +93,8 @@ python ml/src/evaluate.py
 |:---|:---:|:---:|:---:|:---:|:---:|
 | **No Fault** | `0` | 1.0000 | 1.0000 | **1.0000** | 3,200 |
 | **Rich Mixture** | `1` | 1.0000 | 1.0000 | **1.0000** | 2,200 |
-| **Lean Mixture** | `2` | 0.5244 | 0.4773 | **0.4997** | 3,000 |
-| **Low Voltage** | `3` | 0.4891 | 0.5361 | **0.5115** | 2,800 |
+| **Lean Mixture** | `2` | 0.5347 | 0.4447 | **0.4855** | 3,000 |
+| **Low Voltage** | `3` | 0.4959 | 0.5854 | **0.5369** | 2,800 |
 
 ---
 

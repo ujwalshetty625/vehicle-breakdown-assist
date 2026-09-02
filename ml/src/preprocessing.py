@@ -167,26 +167,32 @@ def clean_data(df: pd.DataFrame) -> pd.DataFrame:
     df_clean = df.copy()
     initial_len = len(df_clean)
 
-    # 1. Drop rows with nulls in any feature or target
+    # 1. Drop exact duplicate rows (prevents train/test partition overlap)
+    dup_count = df_clean.duplicated().sum()
+    if dup_count > 0:
+        df_clean = df_clean.drop_duplicates().reset_index(drop=True)
+        logger.info(f"Data Cleaning: Removed {dup_count} exact duplicate rows.")
+
+    # 2. Drop rows with nulls in any feature or target
     df_clean = df_clean.dropna(subset=FEATURE_ORDER + [TARGET_COLUMN])
 
-    # 2. Drop rows with non-finite (infinite / NaN) values in numeric features
+    # 3. Drop rows with non-finite (infinite / NaN) values in numeric features
     numeric_features = [col for col in FEATURE_ORDER if col in df_clean.columns]
     is_finite_mask = np.isfinite(df_clean[numeric_features].values).all(axis=1)
     df_clean = df_clean[is_finite_mask]
 
-    # 3. Ensure target is integer
+    # 4. Ensure target is integer
     df_clean[TARGET_COLUMN] = df_clean[TARGET_COLUMN].astype(int)
 
-    # 4. Filter target classes strictly to valid set {0, 1, 2, 3}
+    # 5. Filter target classes strictly to valid set {0, 1, 2, 3}
     valid_classes = set(FAULT_LABELS.keys())
     df_clean = df_clean[df_clean[TARGET_COLUMN].isin(valid_classes)]
 
     dropped_count = initial_len - len(df_clean)
     if dropped_count > 0:
-        logger.warning(
-            f"Data Cleaning: Dropped {dropped_count} invalid/corrupt rows "
-            f"({dropped_count / initial_len:.2%}). Remaining: {len(df_clean)} rows."
+        logger.info(
+            f"Data Cleaning Summary: Total dropped rows = {dropped_count} "
+            f"({dropped_count / initial_len:.4%}). Clean dataset: {len(df_clean):,} rows."
         )
     else:
         logger.info(f"Data Cleaning: All {len(df_clean)} rows are valid and complete.")

@@ -20,6 +20,7 @@ export type VehicleType =
     | "pickup_truck"
     | (string & {});
 
+
 export interface VehicleTypeOption {
     id: string;
     name: string;
@@ -28,10 +29,12 @@ export interface VehicleTypeOption {
     in_db?: boolean;
 }
 
+
 export interface VehicleCategoryGroup {
     category: string;
     vehicles: VehicleTypeOption[];
 }
+
 
 export interface TelemetryData {
     MAP: number;
@@ -50,6 +53,7 @@ export interface TelemetryData {
     AFR: number;
 }
 
+
 export interface DiagnosticPreset {
     id: string;
     name: string;
@@ -59,15 +63,14 @@ export interface DiagnosticPreset {
     telemetry: TelemetryData;
 }
 
+
 export interface BreakdownData {
     vehicleModel: string;
     vehicleYear: string;
     vehicleType: VehicleType;
     fuelType: string;
-
     symptoms: string;
     warningLight: string;
-
     location: string;
     latitude: number | null;
     longitude: number | null;
@@ -90,12 +93,14 @@ export interface BreakdownData {
     AFR: number;
 }
 
+
 export interface SeverityInfo {
     severity: "low" | "medium" | "high" | "critical" | string;
     safe_to_drive: boolean;
     low_confidence: boolean;
     advisory: string;
 }
+
 
 export interface RoadsideSafetyInfo {
     risk_level: "low" | "medium" | "high" | "critical" | string;
@@ -106,50 +111,46 @@ export interface RoadsideSafetyInfo {
     context_note: string;
 }
 
+
 export interface DiagnosisResult {
     fault: string;
     confidence: number;
-
     severity: string;
     safeToDrive?: boolean;
     lowConfidence?: boolean;
     advisory?: string;
-
     safetyRecommendation: string;
     roadsideSafety?: RoadsideSafetyInfo;
-
     assistanceRequired: string;
-
     // Optional values from the backend
     faultType?: number;
     classProbabilities?: number[];
     requiredCapability?: string | null;
 }
 
+
 export interface Provider {
     id: number;
     name: string;
     phone?: string | null;
     email?: string | null;
-
     latitude: number;
     longitude: number;
-
     distanceKm: number;
     etaMinutes?: number;
-
     rating: number;
     available: boolean;
-
     services: string[];
     vehicleCompatibility: string[];
-
     matchScore: number;
 }
+
 
 export interface MatchedProvider {
     id: number;
     name: string;
+    phone?: string | null;
+    email?: string | null;
     distance_km: number;
     rating: number;
     score: number;
@@ -159,23 +160,20 @@ export interface MatchedProvider {
     vehicle_types?: string[];
 }
 
+
 export interface BackendProvider {
     id: number;
     name: string;
     phone?: string | null;
     email?: string | null;
-
     latitude: number;
     longitude: number;
-
     vehicle_types: string[];
-
     is_available: boolean;
-
     rating: number;
-
     capabilities: string[];
 }
+
 
 export interface AssistResponse {
     diagnosis: {
@@ -184,30 +182,22 @@ export interface AssistResponse {
         confidence: number;
         class_probabilities: number[];
     };
-
     severity?: SeverityInfo;
     roadside_safety?: RoadsideSafetyInfo;
-
     assistance_required: boolean;
     required_capability: string | null;
-
     matched: boolean;
     message: string;
-
     assignment_id: number | null;
-
     assigned_provider: MatchedProvider | null;
-
     ranked_candidates: MatchedProvider[];
 }
+
 
 export interface ReplanResponse {
     matched?: boolean;
     message?: string;
-
     assignment_id?: number | null;
-
     assigned_provider?: MatchedProvider | null;
-
     ranked_candidates?: MatchedProvider[];
 }

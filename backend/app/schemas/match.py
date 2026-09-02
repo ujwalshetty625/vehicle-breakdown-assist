@@ -1,10 +1,12 @@
 from pydantic import BaseModel, Field
 
+
 class MatchRequest(BaseModel):
     required_capability: str
     vehicle_type: str
     latitude: float
     longitude: float
+
 
 class MatchedProviderOut(BaseModel):
     id: int
@@ -16,8 +18,10 @@ class MatchedProviderOut(BaseModel):
     score: float
     latitude: float = 0.0
     longitude: float = 0.0
+
     capabilities: list[str] = Field(default_factory=list)
     vehicle_types: list[str] = Field(default_factory=list)
+
 
 class MatchResponse(BaseModel):
     matched: bool

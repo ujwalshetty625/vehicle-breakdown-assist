@@ -41,17 +41,21 @@ export const calculateDistanceKm = (
     lon2: number
 ): number => {
     if (!lat1 || !lon1 || !lat2 || !lon2) return 3.5;
-    const R = 6371; // km
+
+    const R = 6371;
     const dLat = ((lat2 - lat1) * Math.PI) / 180;
     const dLon = ((lon2 - lon1) * Math.PI) / 180;
+
     const a =
         Math.sin(dLat / 2) * Math.sin(dLat / 2) +
         Math.cos((lat1 * Math.PI) / 180) *
             Math.cos((lat2 * Math.PI) / 180) *
             Math.sin(dLon / 2) *
             Math.sin(dLon / 2);
+
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     const dist = R * c;
+
     return Math.max(0.35, Math.round(dist * 100) / 100);
 };
 
@@ -81,9 +85,15 @@ const mapBackendProvider = (
     userLat: number = 12.9345,
     userLng: number = 77.6265
 ): Provider => {
-    const dist = match?.distance_km && match.distance_km > 0
-        ? match.distance_km
-        : calculateDistanceKm(userLat, userLng, provider.latitude, provider.longitude);
+    const dist =
+        match?.distance_km && match.distance_km > 0
+            ? match.distance_km
+            : calculateDistanceKm(
+                  userLat,
+                  userLng,
+                  provider.latitude,
+                  provider.longitude
+              );
 
     return {
         id: provider.id,
@@ -109,10 +119,21 @@ const mapBackendProvider = (
  * =========================================================
  */
 
-export const getProviders = async (userLat: number = 12.9345, userLng: number = 77.6265): Promise<Provider[]> => {
+export const getProviders = async (
+    userLat: number = 12.9345,
+    userLng: number = 77.6265
+): Promise<Provider[]> => {
     try {
         const response = await api.get<BackendProvider[]>("/providers");
-        return response.data.map((provider) => mapBackendProvider(provider, undefined, userLat, userLng));
+
+        return response.data.map((provider) =>
+            mapBackendProvider(
+                provider,
+                undefined,
+                userLat,
+                userLng
+            )
+        );
     } catch (error) {
         console.error("GET /providers failed:", error);
         return [];
@@ -135,49 +156,134 @@ export const getVehicleTypes = async (): Promise<{
             categories: VehicleCategoryGroup[];
             types: VehicleTypeOption[];
         }>("/vehicle-types");
+
         return response.data;
     } catch (error) {
-        console.error("GET /vehicle-types failed, using local fallback:", error);
+        console.error(
+            "GET /vehicle-types failed, using local fallback:",
+            error
+        );
+
         return {
             categories: [
                 {
                     category: "Passenger Vehicle",
                     vehicles: [
-                        { id: "car", name: "Sedan / Hatchback / Car", icon: "🚗", category: "Passenger Vehicle" },
-                        { id: "suv", name: "SUV / Crossover", icon: "🚙", category: "Passenger Vehicle" },
-                        { id: "pickup_truck", name: "Pickup Truck", icon: "🛻", category: "Passenger Vehicle" },
-                    ]
+                        {
+                            id: "car",
+                            name: "Sedan / Hatchback / Car",
+                            icon: "🚗",
+                            category: "Passenger Vehicle",
+                        },
+                        {
+                            id: "suv",
+                            name: "SUV / Crossover",
+                            icon: "🚙",
+                            category: "Passenger Vehicle",
+                        },
+                        {
+                            id: "pickup_truck",
+                            name: "Pickup Truck",
+                            icon: "🛻",
+                            category: "Passenger Vehicle",
+                        },
+                    ],
                 },
                 {
                     category: "Two Wheeler",
                     vehicles: [
-                        { id: "motorcycle", name: "Motorcycle / Bike", icon: "🏍️", category: "Two Wheeler" },
-                        { id: "scooter", name: "Scooter / Scooty", icon: "🛵", category: "Two Wheeler" },
-                        { id: "moped", name: "Moped", icon: "🛵", category: "Two Wheeler" },
-                    ]
+                        {
+                            id: "motorcycle",
+                            name: "Motorcycle / Bike",
+                            icon: "🏍️",
+                            category: "Two Wheeler",
+                        },
+                        {
+                            id: "scooter",
+                            name: "Scooter / Scooty",
+                            icon: "🛵",
+                            category: "Two Wheeler",
+                        },
+                        {
+                            id: "moped",
+                            name: "Moped",
+                            icon: "🛵",
+                            category: "Two Wheeler",
+                        },
+                    ],
                 },
                 {
                     category: "Auto & Light Commercial",
                     vehicles: [
-                        { id: "auto_rickshaw", name: "Auto Rickshaw", icon: "🛺", category: "Auto & Light Commercial" },
-                        { id: "e_rickshaw", name: "E-Rickshaw", icon: "🛺", category: "Auto & Light Commercial" },
-                        { id: "taxi", name: "Taxi / Cab", icon: "🚕", category: "Auto & Light Commercial" },
-                        { id: "van", name: "Van / Minivan", icon: "🚐", category: "Auto & Light Commercial" },
-                        { id: "mini_truck", name: "Mini Truck", icon: "🛻", category: "Auto & Light Commercial" },
-                    ]
+                        {
+                            id: "auto_rickshaw",
+                            name: "Auto Rickshaw",
+                            icon: "🛺",
+                            category: "Auto & Light Commercial",
+                        },
+                        {
+                            id: "e_rickshaw",
+                            name: "E-Rickshaw",
+                            icon: "🛺",
+                            category: "Auto & Light Commercial",
+                        },
+                        {
+                            id: "taxi",
+                            name: "Taxi / Cab",
+                            icon: "🚕",
+                            category: "Auto & Light Commercial",
+                        },
+                        {
+                            id: "van",
+                            name: "Van / Minivan",
+                            icon: "🚐",
+                            category: "Auto & Light Commercial",
+                        },
+                        {
+                            id: "mini_truck",
+                            name: "Mini Truck",
+                            icon: "🛻",
+                            category: "Auto & Light Commercial",
+                        },
+                    ],
                 },
                 {
                     category: "Commercial & Heavy",
                     vehicles: [
-                        { id: "bus", name: "Bus / Coach", icon: "🚌", category: "Commercial & Heavy" },
-                        { id: "truck", name: "Truck", icon: "🚚", category: "Commercial & Heavy" },
-                        { id: "heavy_truck", name: "Heavy Duty Truck", icon: "🚛", category: "Commercial & Heavy" },
-                        { id: "tractor", name: "Tractor", icon: "🚜", category: "Commercial & Heavy" },
-                        { id: "ambulance", name: "Ambulance / Emergency", icon: "🚑", category: "Commercial & Heavy" },
-                    ]
-                }
+                        {
+                            id: "bus",
+                            name: "Bus / Coach",
+                            icon: "🚌",
+                            category: "Commercial & Heavy",
+                        },
+                        {
+                            id: "truck",
+                            name: "Truck",
+                            icon: "🚚",
+                            category: "Commercial & Heavy",
+                        },
+                        {
+                            id: "heavy_truck",
+                            name: "Heavy Duty Truck",
+                            icon: "🚛",
+                            category: "Commercial & Heavy",
+                        },
+                        {
+                            id: "tractor",
+                            name: "Tractor",
+                            icon: "🚜",
+                            category: "Commercial & Heavy",
+                        },
+                        {
+                            id: "ambulance",
+                            name: "Ambulance / Emergency",
+                            icon: "🚑",
+                            category: "Commercial & Heavy",
+                        },
+                    ],
+                },
             ],
-            types: []
+            types: [],
         };
     }
 };
@@ -191,7 +297,10 @@ export const getVehicleTypes = async (): Promise<{
 
 export const getDiagnosticPresets = async (): Promise<DiagnosticPreset[]> => {
     try {
-        const response = await api.get<DiagnosticPreset[]>("/diagnostics/presets");
+        const response = await api.get<DiagnosticPreset[]>(
+            "/diagnostics/presets"
+        );
+
         return response.data;
     } catch (error) {
         console.error("GET /diagnostics/presets failed:", error);
@@ -207,7 +316,7 @@ export const autoScanVehicleECU = async (
 ): Promise<{
     matched_preset: string;
     fault_hypothesis: string;
-    telemetry: BreakdownData["MAP"] extends number ? Record<string, number> : any;
+    telemetry: Record<string, number>;
 }> => {
     try {
         const response = await api.post("/diagnostics/scan", {
@@ -215,6 +324,7 @@ export const autoScanVehicleECU = async (
             vehicle_type: vehicleType,
             symptoms: symptoms,
         });
+
         return response.data;
     } catch (error) {
         console.error("POST /diagnostics/scan failed:", error);
@@ -246,10 +356,17 @@ const DEFAULT_TELEMETRY = {
     AFR: 14.7,
 };
 
-const sanitizeTelemetry = (val: number | undefined, defaultVal: number): number => {
+const sanitizeTelemetry = (
+    val: number | undefined,
+    defaultVal: number
+): number => {
     const num = Number(val);
-    return !isNaN(num) && num !== 0 ? num : defaultVal;
+
+    return !isNaN(num) && num !== 0
+        ? num
+        : defaultVal;
 };
+
 
 export const assist = async (
     data: BreakdownData
@@ -266,31 +383,57 @@ export const assist = async (
         longitude: data.longitude ?? 77.6265,
         engine_photo: data.enginePhoto || null,
 
-        /* 14 ML telemetry values - sanitized so missing/zero values don't distort ML diagnosis */
         MAP: sanitizeTelemetry(data.MAP, DEFAULT_TELEMETRY.MAP),
         TPS: sanitizeTelemetry(data.TPS, DEFAULT_TELEMETRY.TPS),
         Force: sanitizeTelemetry(data.Force, DEFAULT_TELEMETRY.Force),
         Power: sanitizeTelemetry(data.Power, DEFAULT_TELEMETRY.Power),
         RPM: sanitizeTelemetry(data.RPM, DEFAULT_TELEMETRY.RPM),
-        consumption_lh: sanitizeTelemetry(data.consumption_lh, DEFAULT_TELEMETRY.consumption_lh),
-        consumption_l100km: sanitizeTelemetry(data.consumption_l100km, DEFAULT_TELEMETRY.consumption_l100km),
-        Speed: sanitizeTelemetry(data.Speed, DEFAULT_TELEMETRY.Speed),
+        consumption_lh: sanitizeTelemetry(
+            data.consumption_lh,
+            DEFAULT_TELEMETRY.consumption_lh
+        ),
+        consumption_l100km: sanitizeTelemetry(
+            data.consumption_l100km,
+            DEFAULT_TELEMETRY.consumption_l100km
+        ),
+        Speed: sanitizeTelemetry(
+            data.Speed,
+            DEFAULT_TELEMETRY.Speed
+        ),
         CO: sanitizeTelemetry(data.CO, DEFAULT_TELEMETRY.CO),
         HC: sanitizeTelemetry(data.HC, DEFAULT_TELEMETRY.HC),
         CO2: sanitizeTelemetry(data.CO2, DEFAULT_TELEMETRY.CO2),
         O2: sanitizeTelemetry(data.O2, DEFAULT_TELEMETRY.O2),
-        Lambda: sanitizeTelemetry(data.Lambda, DEFAULT_TELEMETRY.Lambda),
+        Lambda: sanitizeTelemetry(
+            data.Lambda,
+            DEFAULT_TELEMETRY.Lambda
+        ),
         AFR: sanitizeTelemetry(data.AFR, DEFAULT_TELEMETRY.AFR),
     };
 
-    console.log("========== POST /assist ==========", payload);
+    console.log(
+        "========== POST /assist ==========",
+        payload
+    );
 
     try {
-        const response = await api.post<AssistResponse>("/assist", payload);
-        console.log("Assist response:", response.data);
+        const response = await api.post<AssistResponse>(
+            "/assist",
+            payload
+        );
+
+        console.log(
+            "Assist response:",
+            response.data
+        );
+
         return response.data;
     } catch (error) {
-        console.error("POST /assist failed:", error);
+        console.error(
+            "POST /assist failed:",
+            error
+        );
+
         throw error;
     }
 };
@@ -306,12 +449,20 @@ export const replanAssistance = async (
     assignmentId: number
 ): Promise<ReplanResponse> => {
     try {
-        const response = await api.post<ReplanResponse>("/replan", {
-            assignment_id: assignmentId,
-        });
+        const response = await api.post<ReplanResponse>(
+            "/replan",
+            {
+                assignment_id: assignmentId,
+            }
+        );
+
         return response.data;
     } catch (error) {
-        console.error("POST /replan failed:", error);
+        console.error(
+            "POST /replan failed:",
+            error
+        );
+
         throw error;
     }
 };
