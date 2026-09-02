@@ -5,15 +5,82 @@ from sqlalchemy.orm import Session
 from app.db.session import get_db
 from app.db.models import Assignment
 from app.schemas.match import MatchedProviderOut
+from app.schemas.assist import AssistRequest
+
 from app.ml_integration.inference import predict_fault
+from app.ml_integration.cv_inference import analyze_warning_light
+
 from app.services.diagnosis import get_required_capability
 from app.services.matching import find_candidates
 from app.services.severity import assess_severity
 from app.services.roadside_safety import assess_roadside_safety
-from app.schemas.assist import AssistRequest
 
 
 router = APIRouter()
+
+
+# Safety priority used only when high-confidence CV and telemetry
+# indicate different assistance requirements.
+CAPABILITY_PRIORITY = {
+    "towing": 4,
+    "engine_repair": 3,
+    "battery_jumpstart": 2,
+    "tire_change": 1,
+}
+
+
+def _select_multimodal_capability(
+    telemetry_capability: str | None,
+    cv_result: dict | None,
+    symptoms: str | None,
+) -> str | None:
+    """
+    Combine telemetry diagnosis and CV warning-light evidence.
+
+    Rules:
+    1. No CV image/result -> preserve existing telemetry behavior.
+    2. Low-confidence CV -> ignore CV for capability routing.
+    3. High-confidence CV + no telemetry capability -> use CV capability.
+    4. High-confidence CV + telemetry capability:
+       - If they agree, keep the capability.
+       - If they disagree, choose the more safety-critical capability.
+    5. Existing symptom fallback remains available if neither modality
+       provides a capability.
+    """
+
+    # Existing behavior when no CV result exists.
+    if not cv_result:
+        return telemetry_capability
+
+    cv_confidence = float(cv_result.get("confidence", 0.0))
+    cv_capability = cv_result.get("recommended_capability")
+
+    # Do not use uncertain CV predictions for provider routing.
+    if cv_confidence < 0.65 or not cv_capability:
+        return telemetry_capability
+
+    # No telemetry capability — high-confidence CV can provide one.
+    if telemetry_capability is None:
+        return cv_capability
+
+    # Both modalities agree.
+    if telemetry_capability == cv_capability:
+        return telemetry_capability
+
+    # Conflict: choose the more safety-critical capability.
+    telemetry_priority = CAPABILITY_PRIORITY.get(
+        telemetry_capability,
+        0,
+    )
+    cv_priority = CAPABILITY_PRIORITY.get(
+        cv_capability,
+        0,
+    )
+
+    if cv_priority > telemetry_priority:
+        return cv_capability
+
+    return telemetry_capability
 
 
 @router.post("/assist")
@@ -35,7 +102,10 @@ def assist(
 
     v_type = request.vehicle_type or "car"
 
-    # 1. Prepare the 14 ML features
+    # =========================================================
+    # 1. Prepare the 14 ML telemetry features
+    # =========================================================
+
     features = {
         "MAP": request.MAP,
         "TPS": request.TPS,
@@ -53,22 +123,79 @@ def assist(
         "AFR": request.AFR,
     }
 
-    # 2. Run ML diagnosis — this is the REAL model output, never overwritten
+    # =========================================================
+    # 2. Telemetry ML diagnosis
+    # =========================================================
+
+    # This remains the original trained ML model output.
+    # It is never overwritten by the CV model.
     diagnosis = predict_fault(features)
 
-    # 3. Assess severity/safety from the real diagnosis
+    # =========================================================
+    # 3. Computer Vision analysis
+    # =========================================================
+
+    cv_result = None
+
+    if request.engine_photo:
+        try:
+            cv_result = analyze_warning_light(
+                request.engine_photo
+            )
+
+        except ValueError as exc:
+            # Invalid image data should not destroy the existing
+            # telemetry-based assistance flow.
+            cv_result = {
+                "available": False,
+                "error": str(exc),
+            }
+
+        except Exception as exc:
+            # CV failure should degrade gracefully to telemetry ML.
+            cv_result = {
+                "available": False,
+                "error": f"CV inference failed: {exc}",
+            }
+
+    # =========================================================
+    # 4. Assess telemetry diagnosis severity
+    # =========================================================
+
     severity_info = assess_severity(
         diagnosis["fault_name"],
         diagnosis["confidence"],
     )
 
-    # 4. Convert fault into recommended assistance capability
-    required_capability = get_required_capability(
+    # =========================================================
+    # 5. Determine capability from telemetry ML
+    # =========================================================
+
+    telemetry_capability = get_required_capability(
         diagnosis["fault_name"]
     )
 
-    # Rule-based fallback: only fires when ML found "No Fault" but symptoms suggest
-    # something outside the ML model's scope (tires, towing) — never overwrites diagnosis.
+    # =========================================================
+    # 6. Combine telemetry + CV evidence
+    # =========================================================
+
+    required_capability = _select_multimodal_capability(
+        telemetry_capability,
+        cv_result if cv_result and cv_result.get("available", True) else None,
+        request.symptoms,
+    )
+
+    # If the CV model is unavailable because of an error,
+    # preserve the original telemetry capability.
+    if cv_result and cv_result.get("available") is False:
+        required_capability = telemetry_capability
+
+    # =========================================================
+    # 7. Existing symptom-based fallback
+    # =========================================================
+
+    # This remains the existing fallback for faults outside
+    # the telemetry model's supported classes.
     if required_capability is None and request.symptoms:
         s_lower = request.symptoms.lower()
 
@@ -93,7 +220,10 @@ def assist(
         else:
             required_capability = "engine_repair"
 
-    # No roadside assistance required
+    # =========================================================
+    # 8. No roadside assistance required
+    # =========================================================
+
     if required_capability is None:
         roadside = assess_roadside_safety(
             severity=severity_info["severity"],
@@ -105,6 +235,7 @@ def assist(
 
         return {
             "diagnosis": diagnosis,
+            "cv_analysis": cv_result,
             "severity": severity_info,
             "roadside_safety": roadside,
             "assistance_required": False,
@@ -112,14 +243,17 @@ def assist(
             "matched": False,
             "message": (
                 "No immediate roadside assistance required based on "
-                "diagnostic telemetry."
+                "diagnostic telemetry and available visual analysis."
             ),
             "assignment_id": None,
             "assigned_provider": None,
             "ranked_candidates": [],
         }
 
-    # 5. Find eligible providers
+    # =========================================================
+    # 9. Find eligible providers
+    # =========================================================
+
     candidates = find_candidates(
         db,
         required_capability=required_capability,
@@ -128,7 +262,10 @@ def assist(
         longitude=lng,
     )
 
-    # Assistance required, but no provider currently available
+    # =========================================================
+    # 10. Assistance required but no provider available
+    # =========================================================
+
     if not candidates:
         roadside = assess_roadside_safety(
             severity=severity_info["severity"],
@@ -139,6 +276,7 @@ def assist(
 
         return {
             "diagnosis": diagnosis,
+            "cv_analysis": cv_result,
             "severity": severity_info,
             "roadside_safety": roadside,
             "assistance_required": True,
@@ -153,6 +291,10 @@ def assist(
             "ranked_candidates": [],
         }
 
+    # =========================================================
+    # 11. Build ranked provider response
+    # =========================================================
+
     ranked = [
         MatchedProviderOut(
             id=provider.id,
@@ -164,13 +306,22 @@ def assist(
             score=round(score, 2),
             latitude=provider.latitude,
             longitude=provider.longitude,
-            capabilities=[c.name for c in provider.capabilities],
-            vehicle_types=[vt.name for vt in provider.vehicle_types],
+            capabilities=[
+                c.name for c in provider.capabilities
+            ],
+            vehicle_types=[
+                vt.name for vt in provider.vehicle_types
+            ],
         )
         for provider, distance, score in candidates
     ]
 
+    # =========================================================
+    # 12. Assign best provider
+    # =========================================================
+
     provider = candidates[0][0]
+
     provider.is_available = False
 
     assignment = Assignment(
@@ -186,7 +337,10 @@ def assist(
     db.commit()
     db.refresh(assignment)
 
-    # Roadside safety assessment for the matched provider
+    # =========================================================
+    # 13. Roadside safety assessment
+    # =========================================================
+
     roadside = assess_roadside_safety(
         severity=severity_info["severity"],
         safe_to_drive=severity_info["safe_to_drive"],
@@ -194,8 +348,13 @@ def assist(
         matched=True,
     )
 
+    # =========================================================
+    # 14. Final multimodal assistance response
+    # =========================================================
+
     return {
         "diagnosis": diagnosis,
+        "cv_analysis": cv_result,
         "severity": severity_info,
         "roadside_safety": roadside,
         "assistance_required": True,
