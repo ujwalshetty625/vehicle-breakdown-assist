@@ -1,6 +1,8 @@
 import { useState } from "react";
 import type { Provider, DiagnosisResult, MatchedProvider } from "../types/vehicle";
 import InteractiveMap from "../components/InteractiveMap";
+import SafetyCard from "../components/SafetyCard";
+import ProviderCard from "../components/ProviderCard";
 
 interface ResultsProps {
     onBack: () => void;
@@ -79,6 +81,13 @@ function Results({
         ? diagnosis.fault
         : "Engine Misfire / Rich Fuel Ratio";
 
+    const severityObj = {
+        severity: diagnosis?.severity || "medium",
+        safe_to_drive: diagnosis?.safeToDrive ?? true,
+        low_confidence: diagnosis?.lowConfidence ?? false,
+        advisory: diagnosis?.advisory || diagnosis?.safetyRecommendation || "",
+    };
+
     return (
         <div className="page results-page">
             <div className="results-container">
@@ -107,7 +116,7 @@ function Results({
                 )}
 
                 <div className="results-layout">
-                    {/* LEFT COLUMN: DIAGNOSIS REPORT & MAP */}
+                    {/* LEFT COLUMN: DIAGNOSIS REPORT & SAFETY CARD & MAP */}
                     <div className="results-sidebar">
                         <div className="results-card glass-card diagnosis-card">
                             <div className="card-header">
@@ -148,6 +157,13 @@ function Results({
                             </div>
                         </div>
 
+                        {/* BACKEND ROADSIDE SAFETY & SEVERITY ASSESSMENT CARD */}
+                        <SafetyCard
+                            severityInfo={severityObj}
+                            roadsideSafety={diagnosis?.roadsideSafety}
+                            faultName={faultName}
+                        />
+
                         {/* ATTACHED PHOTO CARD IF AVAILABLE */}
                         {enginePhoto && (
                             <div className="results-card glass-card photo-attached-card">
@@ -181,67 +197,13 @@ function Results({
                     <div className="results-main">
                         {/* PRIMARY MATCH CARD */}
                         {primaryProvider ? (
-                            <div className="results-card glass-card primary-provider-card">
-                                <div className="primary-badge">🏆 TOP MATCHED PROVIDER (DATABASE VERIFIED)</div>
-
-                                <div className="provider-header-row">
-                                    <div>
-                                        <h3>{primaryProvider.name}</h3>
-                                        <div className="provider-sub-info">
-                                            <span className="rating-stars">⭐ {primaryProvider.rating.toFixed(1)} / 5.0</span>
-                                            <span className="info-dot">•</span>
-                                            <span className="distance-info">📍 {primaryProvider.distanceKm} km away</span>
-                                            <span className="info-dot">•</span>
-                                            <span className="eta-info">⏱️ ~{primaryProvider.etaMinutes || 10} mins ETA</span>
-                                        </div>
-                                    </div>
-
-                                    <div className="status-indicator-badge">
-                                        <span className="status-dot green-dot" /> Available
-                                    </div>
-                                </div>
-
-                                <div className="services-tags-row">
-                                    <span className="tags-heading">Capabilities:</span>
-                                    {primaryProvider.services.map((srv) => (
-                                        <span key={srv} className="service-tag">
-                                            {formatCapability(srv)}
-                                        </span>
-                                    ))}
-                                </div>
-
-                                {primaryProvider.vehicleCompatibility && primaryProvider.vehicleCompatibility.length > 0 && (
-                                    <div className="services-tags-row">
-                                        <span className="tags-heading">Supported Vehicle Types:</span>
-                                        {primaryProvider.vehicleCompatibility.map((vt) => (
-                                            <span key={vt} className="compatibility-tag">
-                                                🚗 {vt.replace(/_/g, " ")}
-                                            </span>
-                                        ))}
-                                    </div>
-                                )}
-
-                                <div className="provider-actions-row">
-                                    <button
-                                        type="button"
-                                        className="btn-call-provider"
-                                        onClick={() => handleCallProvider(primaryProvider.name)}
-                                    >
-                                        📞 Request Assistance Now
-                                    </button>
-
-                                    {onReplan && (
-                                        <button
-                                            type="button"
-                                            className="btn-replan-provider"
-                                            onClick={handleTriggerReplan}
-                                            disabled={isReplanning}
-                                        >
-                                            {isReplanning ? "🔄 Replanning..." : "🔄 Reassign Provider"}
-                                        </button>
-                                    )}
-                                </div>
-                            </div>
+                            <ProviderCard
+                                provider={primaryProvider}
+                                isPrimary={true}
+                                onCall={handleCallProvider}
+                                onReplan={onReplan ? handleTriggerReplan : undefined}
+                                isReplanning={isReplanning}
+                            />
                         ) : (
                             <div className="results-card glass-card empty-providers-card">
                                 <h3>🔍 Searching Database Providers...</h3>
@@ -256,33 +218,12 @@ function Results({
                             {alternativeProviders.length > 0 ? (
                                 <div className="providers-grid">
                                     {alternativeProviders.map((prov) => (
-                                        <div key={prov.id} className="results-card glass-card provider-subcard">
-                                            <div className="subcard-header">
-                                                <h4>{prov.name}</h4>
-                                                <span className="rating-badge">⭐ {prov.rating.toFixed(1)}</span>
-                                            </div>
-
-                                            <div className="subcard-details">
-                                                <span>📍 {prov.distanceKm} km away</span>
-                                                <span>⏱️ ~{prov.etaMinutes || 15} mins</span>
-                                            </div>
-
-                                            <div className="subcard-tags">
-                                                {prov.services.map((s) => (
-                                                    <span key={s} className="mini-tag">
-                                                        {formatCapability(s)}
-                                                    </span>
-                                                ))}
-                                            </div>
-
-                                            <button
-                                                type="button"
-                                                className="btn-subcard-call"
-                                                onClick={() => handleCallProvider(prov.name)}
-                                            >
-                                                Request Provider
-                                            </button>
-                                        </div>
+                                        <ProviderCard
+                                            key={prov.id}
+                                            provider={prov}
+                                            isPrimary={false}
+                                            onCall={handleCallProvider}
+                                        />
                                     ))}
                                 </div>
                             ) : (
