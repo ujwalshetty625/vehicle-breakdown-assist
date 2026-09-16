@@ -1,4 +1,17 @@
 import type { SeverityInfo, RoadsideSafetyInfo } from "../types/vehicle";
+import {
+    ShieldCheck,
+    ShieldAlert,
+    CheckCircle2,
+    AlertTriangle,
+    Clock,
+    Moon,
+    Sun,
+    Wrench,
+    FileText,
+    PhoneCall,
+    Eye,
+} from "lucide-react";
 
 interface SafetyCardProps {
     severityInfo?: SeverityInfo;
@@ -51,7 +64,9 @@ export default function SafetyCard({
         <div className="results-card glass-card roadside-safety-card">
             <div className="card-header flex-between">
                 <div>
-                    <span className="card-tag">🛡️ Backend Safety Protocol</span>
+                    <span className="card-tag flex items-center gap-1">
+                        <ShieldCheck className="w-3.5 h-3.5 text-sky-600 inline mr-1" /> Safety Protocol
+                    </span>
                     <h2>Roadside Safety Assessment</h2>
                 </div>
                 <div className="safety-badges-group">
@@ -59,50 +74,74 @@ export default function SafetyCard({
                         Risk: {riskLevel.toUpperCase()}
                     </span>
                     <span className={`badge-pill ${safeToDrive ? "badge-safe" : "badge-unsafe"}`}>
-                        {safeToDrive ? "🟢 Safe to Drive Short Distances" : "🔴 DO NOT DRIVE — Pull Over"}
+                        {safeToDrive ? (
+                            <>
+                                <CheckCircle2 className="w-3.5 h-3.5 inline mr-1 text-emerald-600" /> Safe to Drive Short Distances
+                            </>
+                        ) : (
+                            <>
+                                <ShieldAlert className="w-3.5 h-3.5 inline mr-1 text-red-600" /> DO NOT DRIVE — Pull Over
+                            </>
+                        )}
                     </span>
                 </div>
             </div>
 
             <div className="safety-content-body">
                 <div className="guidance-box">
-                    <h4>📋 Safety Guidance</h4>
+                    <h4 className="flex items-center gap-1.5">
+                        <FileText className="w-4 h-4 text-sky-600 inline mr-1" /> Safety Guidance
+                    </h4>
                     <p className="guidance-text">{guidance}</p>
                 </div>
 
                 <div className="safety-actions-box" style={{ background: "#f8fafc", padding: "10px 12px", borderRadius: "8px", border: "1px solid #e2e8f0" }}>
                     <span style={{ fontSize: "0.725rem", color: "#64748b", fontWeight: "700", textTransform: "uppercase", display: "block", marginBottom: "6px" }}>
-                        ⚡ Recommended Safety Checklist
+                        Recommended Safety Checklist
                     </span>
                     <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "6px", fontSize: "0.775rem", color: "#334155" }}>
-                        <span>⚠️ Turn on Hazard Lights</span>
-                        <span>🛡️ Remain in safe location</span>
-                        <span>🦺 Stay visible to traffic</span>
-                        <span>📱 Keep emergency phone ready</span>
+                        <span><AlertTriangle className="w-3.5 h-3.5 inline mr-1 text-amber-500" /> Turn on Hazard Lights</span>
+                        <span><ShieldCheck className="w-3.5 h-3.5 inline mr-1 text-emerald-600" /> Remain in safe location</span>
+                        <span><Eye className="w-3.5 h-3.5 inline mr-1 text-sky-600" /> Stay visible to traffic</span>
+                        <span><PhoneCall className="w-3.5 h-3.5 inline mr-1 text-indigo-600" /> Keep emergency phone ready</span>
                     </div>
                 </div>
 
                 <div className="safety-meta-grid">
                     <div className="safety-meta-item">
                         <span className="meta-label">Estimated Provider ETA</span>
-                        <span className="meta-val">⏱️ {etaEstimate}</span>
+                        <span className="meta-val flex items-center gap-1">
+                            <Clock className="w-3.5 h-3.5 text-sky-600 inline mr-1" /> {etaEstimate}
+                        </span>
                     </div>
 
                     <div className="safety-meta-item">
                         <span className="meta-label">Severity Grade</span>
-                        <span className="meta-val text-capitalize">⚠️ {severity}</span>
+                        <span className="meta-val text-capitalize flex items-center gap-1">
+                            <AlertTriangle className="w-3.5 h-3.5 text-amber-500 inline mr-1" /> {severity}
+                        </span>
                     </div>
 
                     <div className="safety-meta-item">
                         <span className="meta-label">Time & Visibility</span>
-                        <span className="meta-val">
-                            {isNight ? "🌙 Nighttime (High Hazard)" : "☀️ Daytime Visibility"}
+                        <span className="meta-val flex items-center gap-1">
+                            {isNight ? (
+                                <>
+                                    <Moon className="w-3.5 h-3.5 text-indigo-500 inline mr-1" /> Nighttime (High Hazard)
+                                </>
+                            ) : (
+                                <>
+                                    <Sun className="w-3.5 h-3.5 text-amber-500 inline mr-1" /> Daytime Visibility
+                                </>
+                            )}
                         </span>
                     </div>
 
                     <div className="safety-meta-item">
                         <span className="meta-label">Primary Fault</span>
-                        <span className="meta-val">🔧 {faultName}</span>
+                        <span className="meta-val flex items-center gap-1">
+                            <Wrench className="w-3.5 h-3.5 text-slate-600 inline mr-1" /> {faultName}
+                        </span>
                     </div>
                 </div>
 
@@ -110,3 +149,4 @@ export default function SafetyCard({
         </div>
     );
 }
+

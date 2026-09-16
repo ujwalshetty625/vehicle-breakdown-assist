@@ -1,4 +1,4 @@
-import { Activity, ArrowRight, ShieldCheck, Wrench, Car, Zap, MapPin } from "lucide-react";
+import { Activity, ArrowRight, ShieldCheck, Wrench, Car, Zap, MapPin, ShieldAlert, Sparkles } from "lucide-react";
 
 function Home({ onReport }: { onReport: () => void }) {
     return (
@@ -18,8 +18,8 @@ function Home({ onReport }: { onReport: () => void }) {
                     <span className="status-badge">
                         <span className="pulse-dot green-dot" /> Instant Assistance Active
                     </span>
-                    <button className="nav-button glow-btn" onClick={onReport}>
-                        🚨 Emergency Assist
+                    <button className="nav-button glow-btn flex items-center gap-1.5" onClick={onReport}>
+                        <ShieldAlert className="w-4 h-4 text-white inline mr-1" /> Emergency Assist
                     </button>
                 </div>
             </nav>
@@ -42,11 +42,14 @@ function Home({ onReport }: { onReport: () => void }) {
                     </p>
 
                     <div className="hero-cta-group">
-                        <button className="primary-button hero-cta-btn" onClick={onReport}>
-                            <span>🚨 Request Emergency Assistance</span>
+                        <button className="primary-button hero-cta-btn flex items-center gap-2" onClick={onReport}>
+                            <ShieldAlert className="w-5 h-5 text-red-400 inline" />
+                            <span>Request Emergency Assistance</span>
                             <ArrowRight size={20} />
                         </button>
-                        <span className="cta-subtext">⚡ 1-Click Diagnostics & Verified Provider Matching</span>
+                        <span className="cta-subtext flex items-center gap-1">
+                            <Sparkles className="w-3.5 h-3.5 text-emerald-600 inline" /> 1-Click Diagnostics & Verified Provider Matching
+                        </span>
                     </div>
                 </div>
 

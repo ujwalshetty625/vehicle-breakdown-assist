@@ -48,6 +48,18 @@ html, body {
     transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
+/* Common Layout Utilities */
+.flex { display: flex; }
+.items-center { align-items: center; }
+.justify-between { justify-content: space-between; }
+.gap-1 { gap: 4px; }
+.gap-1\.5 { gap: 6px; }
+.gap-2 { gap: 8px; }
+.inline-block { display: inline-block; }
+.inline { display: inline; }
+.mr-1 { margin-right: 4px; }
+.mr-1\.5 { margin-right: 6px; }
+
 .glass-card:hover {
     box-shadow: var(--shadow-lg);
 }

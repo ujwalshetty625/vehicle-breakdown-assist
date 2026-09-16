@@ -38,7 +38,7 @@ def find_candidates(
     filtered by availability + capability + vehicle type, sorted best-first.
     exclude_provider_id lets /replan skip a provider that already failed for this breakdown.
     """
-    query = db.query(Provider)
+    query = db.query(Provider).filter(Provider.is_available == True)
     if exclude_provider_id is not None:
         query = query.filter(Provider.id != exclude_provider_id)
     providers = query.all()
@@ -75,14 +75,12 @@ def find_candidates(
 
     candidates = []
     fallback_capability_candidates = []
-    all_distance_candidates = []
 
     req_cap = (required_capability or "").lower()
 
     for p in providers:
         capability_names = [c.name.lower() for c in p.capabilities]
         exact_capability = (not req_cap or req_cap in capability_names)
-        has_capability = exact_capability or ("towing" in capability_names or "engine_repair" in capability_names)
 
         vehicle_type_names = set(vt.name.lower() for vt in p.vehicle_types)
         has_vehicle_match = bool(acceptable_types.intersection(vehicle_type_names))
@@ -90,19 +88,8 @@ def find_candidates(
         distance = haversine_km(latitude, longitude, p.latitude, p.longitude)
         score = score_provider(distance, p.rating)
 
-        all_distance_candidates.append((p, distance, score + 10.0))
-
         if exact_capability and has_vehicle_match:
             candidates.append((p, distance, score))
-        elif has_capability:
-            fallback_capability_candidates.append((p, distance, score + 3.0))
 
-    if candidates:
-        final_list = candidates
-    elif fallback_capability_candidates:
-        final_list = fallback_capability_candidates
-    else:
-        final_list = all_distance_candidates
-
-    final_list.sort(key=lambda c: c[2])
-    return final_list
+    candidates.sort(key=lambda c: c[2])
+    return candidates

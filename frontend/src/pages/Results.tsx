@@ -3,6 +3,16 @@ import type { Provider, DiagnosisResult, MatchedProvider } from "../types/vehicl
 import InteractiveMap from "../components/InteractiveMap";
 import SafetyCard from "../components/SafetyCard";
 import ProviderCard from "../components/ProviderCard";
+import {
+    MapPin,
+    RefreshCw,
+    Wrench,
+    Lightbulb,
+    BarChart3,
+    Camera,
+    CheckCircle2,
+    SearchX,
+} from "lucide-react";
 
 interface ResultsProps {
     onBack: () => void;
@@ -144,7 +154,9 @@ function Results({
         ];
     }
 
-    const confidencePercent = Math.max(...displayProbabilities.map(p => p.val));
+    const confidencePercent = diagnosis?.confidence !== undefined && diagnosis?.confidence !== null
+        ? Math.round(diagnosis.confidence > 1 ? diagnosis.confidence : diagnosis.confidence * 100)
+        : Math.max(...displayProbabilities.map(p => p.val));
 
     const capabilityTitle =
         formatCapability(
@@ -208,7 +220,8 @@ function Results({
                         className="alert-box alert-info"
                         role="status"
                     >
-                        🔄 {replanMessage}
+                        <RefreshCw className="w-4 h-4 animate-spin inline mr-1.5" />
+                        <span>{replanMessage}</span>
                     </div>
                 )}
 
@@ -217,13 +230,15 @@ function Results({
                 <div className="results-card glass-card top-wide-map-card" style={{ marginBottom: "0.85rem" }}>
                     <div className="map-header flex-between" style={{ padding: "0.85rem 1.25rem 0.35rem" }}>
                         <div>
-                            <span className="card-tag">📍 Geographic Telemetry & Provider Dispatch</span>
+                            <span className="card-tag flex items-center gap-1">
+                                <MapPin className="w-3.5 h-3.5 text-sky-600 inline mr-1" /> Geographic Telemetry & Provider Dispatch
+                            </span>
                             <h2 style={{ fontSize: "1.25rem", margin: "0.2rem 0" }}>
                                 Live Interactive Dispatch & Coverage Map
                             </h2>
                         </div>
-                        <span className="location-name badge-pill" style={{ background: "rgba(2, 132, 199, 0.1)", color: "#0284c7" }}>
-                            📍 {userLocationName} ({uniqueProviders.length} Nearby Providers Mapped)
+                        <span className="location-name badge-pill flex items-center gap-1" style={{ background: "rgba(2, 132, 199, 0.1)", color: "#0284c7" }}>
+                            <MapPin className="w-3.5 h-3.5 inline mr-1" /> {userLocationName} ({uniqueProviders.length} Nearby Providers Mapped)
                         </span>
                     </div>
 
@@ -289,15 +304,15 @@ function Results({
                                 <span className="meta-title">
                                     Required Capability
                                 </span>
-                                <span className="capability-tag">
-                                    🛠️ {capabilityTitle}
+                                <span className="capability-tag flex items-center gap-1">
+                                    <Wrench className="w-3.5 h-3.5 text-slate-500 inline mr-1" /> {capabilityTitle}
                                 </span>
                             </div>
                         </div>
 
                         <div className="safety-advice-box">
-                            <h4>
-                                💡 ML Diagnostic Insights & Advisory
+                            <h4 className="flex items-center gap-1.5">
+                                <Lightbulb className="w-4 h-4 text-amber-500 inline mr-1" /> ML Diagnostic Insights & Advisory
                             </h4>
                             <p>
                                 {diagnosis?.advisory ||
@@ -307,7 +322,7 @@ function Results({
 
                         <div className="class-prob-box" style={{ marginTop: "12px", padding: "10px 12px", background: "rgba(248, 250, 252, 0.9)", borderRadius: "8px", border: "1px solid #e2e8f0" }}>
                             <span style={{ fontSize: "0.725rem", color: "#64748b", fontWeight: "700", textTransform: "uppercase", display: "block", marginBottom: "6px" }}>
-                                📊 ML Model Class Probabilities
+                                <BarChart3 className="w-3.5 h-3.5 text-sky-600 inline mr-1" /> ML Model Class Probabilities
                             </span>
                             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "6px", fontSize: "0.775rem" }}>
                                 {displayProbabilities.map((prob) => (
@@ -334,13 +349,13 @@ function Results({
                     <div className="results-card glass-card photo-full-width-card" style={{ marginBottom: "0.85rem" }}>
                         <div className="photo-card-header flex-between" style={{ marginBottom: "10px" }}>
                             <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                                <span style={{ fontSize: "1.1rem" }}>📸</span>
+                                <Camera className="w-4 h-4 text-sky-600 inline mr-1" />
                                 <h3 style={{ fontSize: "1rem", margin: 0, fontWeight: "700", color: "#0f172a" }}>
                                     Attached Vehicle / Engine Attachment
                                 </h3>
                             </div>
-                            <span className="badge-pill" style={{ background: "#d1fae5", color: "#065f46" }}>
-                                ✅ Transmitted to Recovery Technician
+                            <span className="badge-pill flex items-center gap-1" style={{ background: "#d1fae5", color: "#065f46" }}>
+                                <CheckCircle2 className="w-3.5 h-3.5 inline mr-1" /> Transmitted to Recovery Technician
                             </span>
                         </div>
 
@@ -383,7 +398,7 @@ function Results({
                         />
                     ) : (
                         <div className="results-card glass-card empty-providers-card">
-                            <h3>🔍 No Provider Matched</h3>
+                            <h3 className="flex items-center gap-1.5"><SearchX className="w-5 h-5 text-slate-500 inline mr-1" /> No Provider Matched</h3>
                             <p>
                                 No immediate match found for the requested assistance criteria.
                             </p>

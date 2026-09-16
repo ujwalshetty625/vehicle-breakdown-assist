@@ -8,6 +8,32 @@ import type {
     VehicleCategoryGroup,
 } from "../types/vehicle";
 import { getVehicleTypes, getDiagnosticPresets, autoScanVehicleECU } from "../api/api";
+import {
+    Car,
+    Bike,
+    Zap,
+    Wind,
+    Thermometer,
+    AlertTriangle,
+    MapPin,
+    Camera,
+    Upload,
+    Trash2,
+    CheckCircle2,
+    ArrowLeft,
+    Mic,
+    MicOff,
+    Compass,
+    Activity,
+    Cpu,
+    RefreshCw,
+    Sliders,
+    Sparkles,
+    ShieldAlert,
+    Disc,
+    ChevronDown,
+    Loader2,
+} from "lucide-react";
 
 interface BreakdownProps {
     onBack: () => void;
@@ -16,14 +42,14 @@ interface BreakdownProps {
 
 // Popular Vehicle Brands for quick 1-click selection
 const QUICK_BRANDS = [
-    { name: "Honda", icon: "🚗", model: "Honda City" },
-    { name: "Hyundai", icon: "🚘", model: "Hyundai Creta" },
-    { name: "Maruti Suzuki", icon: "🚗", model: "Maruti Swift" },
-    { name: "Tata", icon: "🚙", model: "Tata Nexon" },
-    { name: "Mahindra", icon: "🚙", model: "Mahindra Thar" },
-    { name: "Royal Enfield", icon: "🏍️", model: "Classic 350" },
-    { name: "TVS", icon: "🛵", model: "TVS Jupiter" },
-    { name: "Toyota", icon: "🚘", model: "Toyota Fortuner" },
+    { name: "Honda", icon: Car, model: "Honda City" },
+    { name: "Hyundai", icon: Car, model: "Hyundai Creta" },
+    { name: "Maruti Suzuki", icon: Car, model: "Maruti Swift" },
+    { name: "Tata", icon: Car, model: "Tata Nexon" },
+    { name: "Mahindra", icon: Car, model: "Mahindra Thar" },
+    { name: "Royal Enfield", icon: Bike, model: "Classic 350" },
+    { name: "TVS", icon: Bike, model: "TVS Jupiter" },
+    { name: "Toyota", icon: Car, model: "Toyota Fortuner" },
 ];
 
 // Interactive Breakdown Symptom Cards
@@ -31,7 +57,7 @@ const QUICK_SYMPTOMS = [
     {
         id: "symptom_smoke",
         title: "Heavy Exhaust Smoke & Power Loss",
-        icon: "💨",
+        icon: Wind,
         symptomText: "Heavy dark exhaust smoke, engine misfire, sputtering sound and severe power loss while accelerating.",
         warning: "Check Engine / Malfunction Indicator",
         presetId: "preset_rich_mixture"
@@ -39,7 +65,7 @@ const QUICK_SYMPTOMS = [
     {
         id: "symptom_battery",
         title: "Battery Dead & Engine Click",
-        icon: "⚡",
+        icon: Zap,
         symptomText: "Engine won't turn over, rapid clicking sound when turning ignition, dim dashboard and headlights.",
         warning: "Battery / Alternator Symbol",
         presetId: "preset_low_voltage"
@@ -47,7 +73,7 @@ const QUICK_SYMPTOMS = [
     {
         id: "symptom_hesitation",
         title: "Engine Hesitation & Surging",
-        icon: "🌡️",
+        icon: Thermometer,
         symptomText: "Vehicle hesitates under load, popping intake noise, unstable RPM idle and vacuum leak symptoms.",
         warning: "Air/Fuel Fault / Service Engine",
         presetId: "preset_lean_mixture"
@@ -55,7 +81,7 @@ const QUICK_SYMPTOMS = [
     {
         id: "symptom_tire",
         title: "Flat Tire or Wheel Puncture",
-        icon: "🛑",
+        icon: Disc,
         symptomText: "Flat tire on roadside, loss of tire pressure, wheel vibrating.",
         warning: "TPMS Low Pressure Light",
         presetId: "preset_tire_damage"
@@ -122,7 +148,7 @@ function Breakdown({ onBack, onComplete }: BreakdownProps) {
                 recognitionRef.current.stop();
             }
             setIsListening(false);
-            setSuccessMsg("⏹️ Voice recording stopped.");
+            setSuccessMsg("Voice recording stopped.");
             setTimeout(() => setSuccessMsg(""), 3000);
             return;
         }
@@ -136,8 +162,7 @@ function Breakdown({ onBack, onComplete }: BreakdownProps) {
 
             setIsListening(true);
             setError("");
-            setSuccessMsg("🎤 Listening... Speak your breakdown symptoms clearly.");
-
+            setSuccessMsg("Listening... Speak your breakdown symptoms clearly.");
             recognition.onresult = (event: any) => {
                 let currentTranscript = "";
                 for (let i = event.resultIndex; i < event.results.length; i++) {
@@ -274,7 +299,7 @@ function Breakdown({ onBack, onComplete }: BreakdownProps) {
         const matchedPreset = presets.find((p) => p.id === symptomItem.presetId) || BUILTIN_PRESETS[symptomItem.presetId];
         if (matchedPreset) {
             applyPresetValues(matchedPreset);
-            setSuccessMsg(`⚡ Auto-configured OBD-II telemetry profile for "${symptomItem.title}"`);
+            setSuccessMsg(`Auto-configured OBD-II telemetry profile for "${symptomItem.title}"`);
             setTimeout(() => setSuccessMsg(""), 4000);
         }
     };
@@ -305,7 +330,7 @@ function Breakdown({ onBack, onComplete }: BreakdownProps) {
         const reader = new FileReader();
         reader.onloadend = () => {
             setEnginePhoto(reader.result as string);
-            setSuccessMsg(`📸 Engine photo attached successfully: ${file.name}`);
+            setSuccessMsg(`Engine photo attached successfully: ${file.name}`);
             setTimeout(() => setSuccessMsg(""), 4000);
         };
         reader.readAsDataURL(file);
@@ -345,7 +370,7 @@ function Breakdown({ onBack, onComplete }: BreakdownProps) {
                 setLambda(String(t.Lambda));
                 setAFR(String(t.AFR));
                 setTelemetryFetched(true);
-                setSuccessMsg(`⚡ Live ECU Scan complete! Fetched telemetry for: ${result.matched_preset || 'diagnostic profile'}`);
+                setSuccessMsg(`Live ECU Scan complete! Fetched telemetry for: ${result.matched_preset || 'diagnostic profile'}`);
             }
         } catch (err) {
             setError("ECU Scan connection simulation active. Fetched default diagnostic profile.");
@@ -480,11 +505,13 @@ function Breakdown({ onBack, onComplete }: BreakdownProps) {
                         disabled={loading}
                         aria-label="Go back"
                     >
-                        ← Back to Home
+                        <ArrowLeft className="w-4 h-4 inline-block mr-1.5" /> Back to Home
                     </button>
 
                     <div className="header-title-group">
-                        <span className="badge-pill pulse-badge">🚨 Guided Roadside Assistance</span>
+                        <span className="badge-pill pulse-badge">
+                            <ShieldAlert className="w-3.5 h-3.5 text-red-600 mr-1.5 inline" /> Guided Roadside Assistance
+                        </span>
                         <h1>Report Vehicle Breakdown</h1>
                         <p>Fill in details below or click 1-touch chips to auto-fetch diagnostics & dispatch nearest providers</p>
                     </div>
@@ -492,13 +519,15 @@ function Breakdown({ onBack, onComplete }: BreakdownProps) {
 
                 {error && (
                     <div className="alert-box alert-error" role="alert">
-                        ⚠️ {error}
+                        <AlertTriangle className="w-4 h-4 flex-shrink-0" />
+                        <span>{error}</span>
                     </div>
                 )}
 
                 {successMsg && (
                     <div className="alert-box alert-success" role="status">
-                        ✅ {successMsg}
+                        <CheckCircle2 className="w-4 h-4 flex-shrink-0" />
+                        <span>{successMsg}</span>
                     </div>
                 )}
 
@@ -506,7 +535,9 @@ function Breakdown({ onBack, onComplete }: BreakdownProps) {
                     {/* SECTION 1: VEHICLE INFORMATION WITH BRAND CHIPS */}
                     <section className="form-card glass-card">
                         <div className="section-heading">
-                            <div className="section-icon">🚗</div>
+                            <div className="section-icon">
+                                <Car className="w-5 h-5 text-sky-600" />
+                            </div>
                             <div>
                                 <h2>1. Vehicle Information</h2>
                                 <p>Select your vehicle brand or choose from popular models below</p>
@@ -517,16 +548,20 @@ function Breakdown({ onBack, onComplete }: BreakdownProps) {
                         <div className="brand-chips-wrapper">
                             <span className="chips-label">Quick Select Brand:</span>
                             <div className="brand-chips">
-                                {QUICK_BRANDS.map((b) => (
-                                    <button
-                                        key={b.name}
-                                        type="button"
-                                        className={`brand-chip-btn ${vehicleModel.includes(b.name) ? "active-brand" : ""}`}
-                                        onClick={() => handleQuickBrandClick(b)}
-                                    >
-                                        {b.icon} {b.name}
-                                    </button>
-                                ))}
+                                {QUICK_BRANDS.map((b) => {
+                                    const BrandIcon = b.icon;
+                                    return (
+                                        <button
+                                            key={b.name}
+                                            type="button"
+                                            className={`brand-chip-btn ${vehicleModel.includes(b.name) ? "active-brand" : ""}`}
+                                            onClick={() => handleQuickBrandClick(b)}
+                                        >
+                                            <BrandIcon className="w-4 h-4 inline-block mr-1.5 text-sky-600" />
+                                            <span>{b.name}</span>
+                                        </button>
+                                    );
+                                })}
                             </div>
                         </div>
 
@@ -568,7 +603,7 @@ function Breakdown({ onBack, onComplete }: BreakdownProps) {
                                             <optgroup key={cat.category} label={cat.category}>
                                                 {cat.vehicles.map((v) => (
                                                     <option key={v.id} value={v.id}>
-                                                        {v.icon} {v.name}
+                                                        {v.name}
                                                     </option>
                                                 ))}
                                             </optgroup>
@@ -576,29 +611,29 @@ function Breakdown({ onBack, onComplete }: BreakdownProps) {
                                     ) : (
                                         <>
                                             <optgroup label="Passenger Vehicles">
-                                                <option value="car">🚗 Sedan / Hatchback / Car</option>
-                                                <option value="suv">🚙 SUV / Crossover</option>
-                                                <option value="pickup_truck">🛻 Pickup Truck</option>
+                                                <option value="car">Sedan / Hatchback / Car</option>
+                                                <option value="suv">SUV / Crossover</option>
+                                                <option value="pickup_truck">Pickup Truck</option>
                                             </optgroup>
                                             <optgroup label="Two Wheelers">
-                                                <option value="motorcycle">🏍️ Motorcycle / Bike</option>
-                                                <option value="scooter">🛵 Scooter / Scooty</option>
-                                                <option value="moped">🛵 Moped</option>
+                                                <option value="motorcycle">Motorcycle / Bike</option>
+                                                <option value="scooter">Scooter / Scooty</option>
+                                                <option value="moped">Moped</option>
                                             </optgroup>
                                             <optgroup label="Auto & Transit">
-                                                <option value="auto_rickshaw">🛺 Auto Rickshaw</option>
-                                                <option value="e_rickshaw">🛺 E-Rickshaw</option>
-                                                <option value="taxi">🚕 Taxi / Cab</option>
-                                                <option value="van">🚐 Van / Minivan</option>
+                                                <option value="auto_rickshaw">Auto Rickshaw</option>
+                                                <option value="e_rickshaw">E-Rickshaw</option>
+                                                <option value="taxi">Taxi / Cab</option>
+                                                <option value="van">Van / Minivan</option>
                                             </optgroup>
                                             <optgroup label="Commercial & Heavy">
-                                                <option value="bus">🚌 Bus / Coach</option>
-                                                <option value="truck">🚚 Truck</option>
-                                                <option value="mini_truck">🛻 Mini Truck</option>
-                                                <option value="light_truck">🚚 Light Commercial Truck</option>
-                                                <option value="heavy_truck">🚛 Heavy Truck</option>
-                                                <option value="tractor">🚜 Tractor</option>
-                                                <option value="ambulance">🚑 Ambulance</option>
+                                                <option value="bus">Bus / Coach</option>
+                                                <option value="truck">Truck</option>
+                                                <option value="mini_truck">Mini Truck</option>
+                                                <option value="light_truck">Light Commercial Truck</option>
+                                                <option value="heavy_truck">Heavy Duty Truck</option>
+                                                <option value="tractor">Tractor</option>
+                                                <option value="ambulance">Ambulance / Emergency</option>
                                             </optgroup>
                                         </>
                                     )}
@@ -614,13 +649,13 @@ function Breakdown({ onBack, onComplete }: BreakdownProps) {
                                     onChange={(e) => setFuelType(e.target.value)}
                                     required
                                 >
-                                    <option value="Petrol">⛽ Petrol (Gasoline)</option>
-                                    <option value="Diesel">⛽ Diesel</option>
-                                    <option value="Electric">⚡ Electric (EV)</option>
-                                    <option value="CNG">🍃 CNG (Compressed Natural Gas)</option>
-                                    <option value="Hybrid">🔋 Hybrid (Petrol + Electric)</option>
-                                    <option value="PHEV">🔋 Plug-in Hybrid (PHEV)</option>
-                                    <option value="LPG">🍃 LPG (Liquefied Petroleum Gas)</option>
+                                    <option value="Petrol">Petrol (Gasoline)</option>
+                                    <option value="Diesel">Diesel</option>
+                                    <option value="Electric">Electric (EV)</option>
+                                    <option value="CNG">CNG (Compressed Natural Gas)</option>
+                                    <option value="Hybrid">Hybrid (Petrol + Electric)</option>
+                                    <option value="PHEV">Plug-in Hybrid (PHEV)</option>
+                                    <option value="LPG">LPG (Liquefied Petroleum Gas)</option>
                                 </select>
                             </div>
                         </div>
@@ -629,7 +664,9 @@ function Breakdown({ onBack, onComplete }: BreakdownProps) {
                     {/* SECTION 2: BREAKDOWN SYMPTOMS WITH 1-TOUCH SYMPTOM CARDS & IMAGE UPLOAD */}
                     <section className="form-card glass-card">
                         <div className="section-heading">
-                            <div className="section-icon">📍</div>
+                            <div className="section-icon">
+                                <MapPin className="w-5 h-5 text-sky-600" />
+                            </div>
                             <div>
                                 <h2>2. Breakdown Symptoms & Location</h2>
                                 <p>Click a symptom card or upload engine photos for AI diagnostic analysis</p>
@@ -640,19 +677,24 @@ function Breakdown({ onBack, onComplete }: BreakdownProps) {
                         <div className="symptoms-selector-wrapper">
                             <span className="chips-label">Quick Select Observed Symptom:</span>
                             <div className="symptom-cards-grid">
-                                {QUICK_SYMPTOMS.map((s) => (
-                                    <div
-                                        key={s.id}
-                                        className={`symptom-card-item ${activeSymptomId === s.id ? "active-symptom-card" : ""}`}
-                                        onClick={() => handleQuickSymptomClick(s)}
-                                    >
-                                        <div className="symptom-card-icon">{s.icon}</div>
-                                        <div className="symptom-card-info">
-                                            <h4>{s.title}</h4>
-                                            <p>{s.symptomText.slice(0, 55)}...</p>
+                                {QUICK_SYMPTOMS.map((s) => {
+                                    const SymptomIcon = s.icon;
+                                    return (
+                                        <div
+                                            key={s.id}
+                                            className={`symptom-card-item ${activeSymptomId === s.id ? "active-symptom-card" : ""}`}
+                                            onClick={() => handleQuickSymptomClick(s)}
+                                        >
+                                            <div className="symptom-card-icon">
+                                                <SymptomIcon className="w-5 h-5 text-sky-600" />
+                                            </div>
+                                            <div className="symptom-card-info">
+                                                <h4>{s.title}</h4>
+                                                <p>{s.symptomText.slice(0, 55)}...</p>
+                                            </div>
                                         </div>
-                                    </div>
-                                ))}
+                                    );
+                                })}
                             </div>
                         </div>
 
@@ -665,7 +707,15 @@ function Breakdown({ onBack, onComplete }: BreakdownProps) {
                                     onClick={handleToggleVoiceInput}
                                     title="Speak your problem description"
                                 >
-                                    {isListening ? "🔴 Listening... (Click to Stop)" : "🎤 Start Voice Recording"}
+                                    {isListening ? (
+                                        <>
+                                            <MicOff className="w-3.5 h-3.5 inline mr-1" /> Recording... (Click to Stop)
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Mic className="w-3.5 h-3.5 inline mr-1" /> Start Voice Recording
+                                        </>
+                                    )}
                                 </button>
                             </div>
                             <textarea
@@ -691,7 +741,9 @@ function Breakdown({ onBack, onComplete }: BreakdownProps) {
 
                         {/* ENGINE & DAMAGE PHOTO UPLOADER OPTION */}
                         <div className="form-group photo-uploader-group">
-                            <label>📷 Vehicle Condition & Damage Photos (CV Visual Analysis)</label>
+                            <label>
+                                <Camera className="w-4 h-4 text-sky-600 inline mr-1.5" /> Vehicle Condition & Damage Photos (CV Visual Analysis)
+                            </label>
                             <p className="photo-hint-text">Take or upload a photo of your engine bay, dashboard warning light, or damaged tire for visual diagnosis.</p>
 
                             {!enginePhoto ? (
@@ -700,7 +752,9 @@ function Breakdown({ onBack, onComplete }: BreakdownProps) {
                                         className="photo-dropzone"
                                         onClick={() => fileInputRef.current?.click()}
                                     >
-                                        <div className="dropzone-icon">📷</div>
+                                        <div className="dropzone-icon">
+                                            <Upload className="w-7 h-7 text-sky-600" />
+                                        </div>
                                         <div className="dropzone-text">
                                             <span>Click or drag image to upload photo</span>
                                             <small>Supports PNG, JPG, WEBP (Max 5MB)</small>
@@ -713,14 +767,14 @@ function Breakdown({ onBack, onComplete }: BreakdownProps) {
                                             className="btn-photo-action"
                                             onClick={() => cameraInputRef.current?.click()}
                                         >
-                                            📷 Take Photo
+                                            <Camera className="w-4 h-4 inline mr-1.5" /> Take Photo
                                         </button>
                                         <button
                                             type="button"
                                             className="btn-photo-action btn-photo-secondary"
                                             onClick={() => fileInputRef.current?.click()}
                                         >
-                                            📁 Upload Image
+                                            <Upload className="w-4 h-4 inline mr-1.5" /> Upload Image
                                         </button>
                                     </div>
 
@@ -747,7 +801,9 @@ function Breakdown({ onBack, onComplete }: BreakdownProps) {
                                         <img src={enginePhoto} alt="Engine Breakdown Attachment" className="preview-img" />
                                     </div>
                                     <div className="preview-info">
-                                        <span className="preview-status">✅ Photo Attached</span>
+                                        <span className="preview-status">
+                                            <CheckCircle2 className="w-4 h-4 text-emerald-600 inline mr-1" /> Photo Attached
+                                        </span>
                                         <span className="preview-filename">{photoName || "engine_photo.jpg"}</span>
                                         <small>Attached for ML visual diagnosis & technician dispatch</small>
                                     </div>
@@ -756,7 +812,7 @@ function Breakdown({ onBack, onComplete }: BreakdownProps) {
                                         className="btn-remove-photo"
                                         onClick={handleRemoveImage}
                                     >
-                                        🗑️ Remove
+                                        <Trash2 className="w-3.5 h-3.5 inline mr-1" /> Remove
                                     </button>
                                 </div>
                             )}
@@ -780,7 +836,15 @@ function Breakdown({ onBack, onComplete }: BreakdownProps) {
                                     onClick={getCurrentLocation}
                                     disabled={locationLoading}
                                 >
-                                    {locationLoading ? "📡 Detecting..." : "🎯 Detect GPS"}
+                                    {locationLoading ? (
+                                        <>
+                                            <RefreshCw className="w-4 h-4 animate-spin inline mr-1.5" /> Detecting...
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Compass className="w-4 h-4 inline mr-1.5" /> Detect GPS
+                                        </>
+                                    )}
                                 </button>
                             </div>
 
@@ -795,7 +859,7 @@ function Breakdown({ onBack, onComplete }: BreakdownProps) {
                                             className={`chip-btn ${location === p.name ? "active-chip" : ""}`}
                                             onClick={() => handleSelectPresetLocation(p)}
                                         >
-                                            📍 {p.name}
+                                            <MapPin className="w-3.5 h-3.5 text-sky-600 inline mr-1" /> {p.name}
                                         </button>
                                     ))}
                                 </div>
@@ -806,9 +870,13 @@ function Breakdown({ onBack, onComplete }: BreakdownProps) {
                     {/* SECTION 3: AUTOMATED VEHICLE DIAGNOSTIC TELEMETRY (ECU DATABASE) */}
                     <section className="form-card glass-card diagnostic-section">
                         <div className="section-heading">
-                            <div className="section-icon">⚡</div>
+                            <div className="section-icon">
+                                <Activity className="w-5 h-5 text-emerald-600" />
+                            </div>
                             <div>
-                                <div className="badge-pill success-badge">Automated Backend Diagnostics</div>
+                                <div className="badge-pill success-badge">
+                                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 mr-1" /> Automated Backend Diagnostics
+                                </div>
                                 <h2>3. Automated Vehicle Health & Sensor Check</h2>
                                 <p>Vehicle telemetry is scanned automatically from backend database to verify fault severity.</p>
                             </div>
@@ -851,7 +919,15 @@ function Breakdown({ onBack, onComplete }: BreakdownProps) {
                                     onClick={handleAutoScanECU}
                                     disabled={isScanningECU}
                                 >
-                                    {isScanningECU ? "🔄 Scanning ECU Database..." : "⚡ Scan Live OBD-II Database"}
+                                    {isScanningECU ? (
+                                        <>
+                                            <RefreshCw className="w-4 h-4 animate-spin inline mr-1.5" /> Scanning ECU Database...
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Cpu className="w-4 h-4 inline mr-1.5" /> Scan Live OBD-II Database
+                                        </>
+                                    )}
                                 </button>
                             </div>
 
@@ -900,7 +976,7 @@ function Breakdown({ onBack, onComplete }: BreakdownProps) {
                                 </div>
                             ) : (
                                 <div className="telemetry-prompt-box" onClick={handleAutoScanECU}>
-                                    <span>👉 Click <b>"⚡ Scan Live OBD-II Database"</b> to auto-load telemetry values from backend database</span>
+                                    <span>Click <b>"Scan Live OBD-II Database"</b> to auto-load telemetry values from backend database</span>
                                 </div>
                             )}
 
@@ -911,7 +987,15 @@ function Breakdown({ onBack, onComplete }: BreakdownProps) {
                                     className="btn-toggle-fine-tune"
                                     onClick={() => setShowFineTune(!showFineTune)}
                                 >
-                                    {showFineTune ? "▼ Hide Raw ECU Telemetry Sensors" : "⚙️ View / Adjust Raw ECU Sensors (Optional)"}
+                                    {showFineTune ? (
+                                        <>
+                                            <ChevronDown className="w-4 h-4 inline mr-1.5" /> Hide Raw ECU Telemetry Sensors
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Sliders className="w-4 h-4 inline mr-1.5" /> View / Adjust Raw ECU Sensors (Optional)
+                                        </>
+                                    )}
                                 </button>
                             </div>
 
@@ -952,7 +1036,15 @@ function Breakdown({ onBack, onComplete }: BreakdownProps) {
                             className="primary-button btn-analyze"
                             disabled={loading}
                         >
-                            {loading ? "🔄 Dispatching ML Diagnosis..." : "⚡ Analyze & Match Providers"}
+                            {loading ? (
+                                <>
+                                    <Loader2 className="w-4 h-4 animate-spin inline mr-1.5" /> Dispatching ML Diagnosis...
+                                </>
+                            ) : (
+                                <>
+                                    <Sparkles className="w-4 h-4 inline mr-1.5" /> Analyze & Match Providers
+                                </>
+                            )}
                         </button>
                     </div>
                 </form>

@@ -59,14 +59,14 @@ export default function InteractiveMap({
             // User Breakdown Location Pin (Red Icon)
             const userIcon = L.divIcon({
                 className: "custom-leaflet-user-pin",
-                html: `<div style="background:#ef4444; color:white; padding:6px 10px; border-radius:20px; font-weight:bold; font-size:12px; border:2px solid white; box-shadow:0 3px 8px rgba(0,0,0,0.4); white-space:nowrap;">🚨 Your Location</div>`,
+                html: `<div style="background:#ef4444; color:white; padding:6px 10px; border-radius:20px; font-weight:bold; font-size:12px; border:2px solid white; box-shadow:0 3px 8px rgba(0,0,0,0.4); white-space:nowrap;">Your Location</div>`,
                 iconSize: [110, 30],
                 iconAnchor: [55, 15],
             });
 
             L.marker([lat, lng], { icon: userIcon })
                 .addTo(map)
-                .bindPopup(`<b>🚨 Breakdown Location</b><br/>${userLocationName}`)
+                .bindPopup(`<b>Breakdown Location</b><br/>${userLocationName}`)
                 .openPopup();
 
             // Bounds to auto-fit all markers
@@ -81,7 +81,7 @@ export default function InteractiveMap({
                 const providerIcon = L.divIcon({
                     className: "custom-leaflet-provider-pin",
                     html: `<div style="background:${isPrimary ? '#10b981' : '#0284c7'}; color:white; padding:5px 9px; border-radius:16px; font-weight:bold; font-size:11px; border:2px solid white; box-shadow:0 3px 8px rgba(0,0,0,0.3); white-space:nowrap;">
-                            ${isPrimary ? '⭐ Top Match' : '🛠️'} ${provider.name.split(' ')[0]} (${provider.distanceKm} km)
+                            ${isPrimary ? 'Top Match' : 'Service'} ${provider.name.split(' ')[0]} (${provider.distanceKm} km)
                            </div>`,
                     iconSize: [140, 26],
                     iconAnchor: [70, 13],
@@ -91,7 +91,7 @@ export default function InteractiveMap({
                     .addTo(map)
                     .bindPopup(
                         `<b>${provider.name}</b><br/>` +
-                        `⭐ ${provider.rating.toFixed(1)} / 5.0 | 📍 ${provider.distanceKm} km<br/>` +
+                        `Rating: ${provider.rating.toFixed(1)} / 5.0 | ${provider.distanceKm} km away<br/>` +
                         `Services: ${provider.services.join(', ')}`
                     );
 

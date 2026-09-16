@@ -1,4 +1,5 @@
 import type { Provider } from "../types/vehicle";
+import { Award, Star, MapPin, Clock, Wrench, Car, Phone, Mail, RefreshCw } from "lucide-react";
 
 interface ProviderCardProps {
     provider: Provider;
@@ -19,9 +20,6 @@ const formatCapability = (val: string): string => {
         .replace(/_/g, " ")
         .replace(/\b\w/g, (c) => c.toUpperCase());
 };
-
-
-
 
 
 export default function ProviderCard({
@@ -50,8 +48,8 @@ export default function ProviderCard({
         >
 
             {isPrimary && (
-                <div className="primary-badge">
-                    🏆 TOP MATCHED PROVIDER (DATABASE VERIFIED)
+                <div className="primary-badge flex items-center gap-1.5">
+                    <Award className="w-4 h-4 text-amber-500 inline mr-1" /> TOP MATCHED PROVIDER (DATABASE VERIFIED)
                 </div>
             )}
 
@@ -65,24 +63,24 @@ export default function ProviderCard({
 
                     <div className="provider-sub-info">
 
-                        <span className="rating-stars">
-                            ⭐ {provider.rating ? provider.rating.toFixed(1) : "4.8"} / 5.0
+                        <span className="rating-stars flex items-center gap-1">
+                            <Star className="w-3.5 h-3.5 text-amber-500 fill-amber-400 inline mr-1" /> {provider.rating ? provider.rating.toFixed(1) : "4.8"} / 5.0
                         </span>
 
                         <span className="info-dot">
                             •
                         </span>
 
-                        <span className="distance-info">
-                            📍 {provider.distanceKm} km away
+                        <span className="distance-info flex items-center gap-1">
+                            <MapPin className="w-3.5 h-3.5 text-sky-600 inline mr-1" /> {provider.distanceKm} km away
                         </span>
 
                         <span className="info-dot">
                             •
                         </span>
 
-                        <span className="eta-info">
-                            ⏱️ ~
+                        <span className="eta-info flex items-center gap-1">
+                            <Clock className="w-3.5 h-3.5 text-sky-600 inline mr-1" /> ~
                             {provider.etaMinutes ||
                                 Math.max(
                                     5,
@@ -118,14 +116,14 @@ export default function ProviderCard({
                     provider.services.map((srv) => (
                         <span
                             key={srv}
-                            className="service-tag"
+                            className="service-tag flex items-center gap-1"
                         >
-                            🛠️ {formatCapability(srv)}
+                            <Wrench className="w-3 h-3 text-slate-500 inline mr-1" /> {formatCapability(srv)}
                         </span>
                     ))
                 ) : (
-                    <span className="service-tag">
-                        🛠️ Roadside Repair & Towing
+                    <span className="service-tag flex items-center gap-1">
+                        <Wrench className="w-3 h-3 text-slate-500 inline mr-1" /> Roadside Repair & Towing
                     </span>
                 )}
 
@@ -144,9 +142,9 @@ export default function ProviderCard({
                     {provider.vehicleCompatibility.map((vt) => (
                         <span
                             key={vt}
-                            className="compatibility-tag"
+                            className="compatibility-tag flex items-center gap-1"
                         >
-                            🚗 {vt.replace(/_/g, " ")}
+                            <Car className="w-3 h-3 text-sky-600 inline mr-1" /> {vt.replace(/_/g, " ")}
                         </span>
                     ))}
 
@@ -157,30 +155,36 @@ export default function ProviderCard({
             <div className="provider-actions-row">
 
                 <a
-                    className="btn-call-provider"
+                    className="btn-call-provider flex items-center gap-1.5"
                     href={`tel:${phoneNumber}`}
                 >
-                    📞 Call Provider ({phoneNumber})
+                    <Phone className="w-4 h-4 inline mr-1" /> Call Provider ({phoneNumber})
                 </a>
 
                 <a
-                    className="btn-email-provider"
+                    className="btn-email-provider flex items-center gap-1.5"
                     href={mailtoLink}
                 >
-                    ✉️ Email Dispatch
+                    <Mail className="w-4 h-4 inline mr-1" /> Email Dispatch
                 </a>
 
                 {isPrimary && onReplan && (
 
                     <button
                         type="button"
-                        className="btn-replan-provider"
+                        className="btn-replan-provider flex items-center gap-1.5"
                         onClick={onReplan}
                         disabled={isReplanning}
                     >
-                        {isReplanning
-                            ? "🔄 Replanning..."
-                            : "🔄 Reassign Provider"}
+                        {isReplanning ? (
+                            <>
+                                <RefreshCw className="w-4 h-4 animate-spin inline mr-1" /> Replanning...
+                            </>
+                        ) : (
+                            <>
+                                <RefreshCw className="w-4 h-4 inline mr-1" /> Reassign Provider
+                            </>
+                        )}
                     </button>
 
                 )}
@@ -189,4 +193,4 @@ export default function ProviderCard({
 
         </div>
     );
-}
+}
