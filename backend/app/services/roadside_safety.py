@@ -23,13 +23,37 @@ SEVERITY_RANK = {
 }
 
 
+def get_time_context(current_time: datetime | None = None) -> str:
+    """Classifies time into prototype time contexts:
+    - 06:00 - 18:00 -> "day"
+    - 18:00 - 21:00 -> "evening"
+    - 21:00 - 06:00 -> "night"
+    """
+    t = current_time or datetime.now()
+    hour = t.hour
+    if hour >= NIGHT_START_HOUR or hour < NIGHT_END_HOUR:
+        return "night"
+    elif hour >= 18:
+        return "evening"
+    else:
+        return "day"
+
+
+def get_night_assistance_priority(time_context: str) -> str:
+    """Returns contextual roadside assistance priority based on time context:
+    - "night" -> "elevated"
+    - "day" / "evening" -> "normal"
+    """
+    if time_context == "night":
+        return "elevated"
+    return "normal"
+
+
 def is_night(current_time: datetime | None = None) -> bool:
     """Night defined as 9 PM - 6 AM, server local time.
     Documented design choice, not a measured risk signal.
     """
-    t = current_time or datetime.now()
-    hour = t.hour
-    return hour >= NIGHT_START_HOUR or hour < NIGHT_END_HOUR
+    return get_time_context(current_time) == "night"
 
 
 def get_distance_band(distance_km: float) -> tuple[str, str]:
@@ -62,7 +86,9 @@ def assess_roadside_safety(
     Deliberately does NOT infer or use occupant demographics, or claim real-time
     location-safety intelligence we don't have.
     """
-    night = is_night(current_time)
+    time_ctx = get_time_context(current_time)
+    night_priority = get_night_assistance_priority(time_ctx)
+    night = (time_ctx == "night")
     severity_level = SEVERITY_RANK.get(severity, 1)
 
     eta_label, distance_interpretation = (
@@ -92,6 +118,8 @@ def assess_roadside_safety(
             "eta_estimate": None,
             "distance_interpretation": None,
             "is_night": night,
+            "time_context": time_ctx,
+            "night_assistance_priority": night_priority,
             "context_note": context_note,
         }
 
@@ -107,6 +135,8 @@ def assess_roadside_safety(
             "eta_estimate": None,
             "distance_interpretation": None,
             "is_night": night,
+            "time_context": time_ctx,
+            "night_assistance_priority": night_priority,
             "context_note": context_note,
         }
 
@@ -142,6 +172,8 @@ def assess_roadside_safety(
             "eta_estimate": eta_label,
             "distance_interpretation": distance_interpretation,
             "is_night": night,
+            "time_context": time_ctx,
+            "night_assistance_priority": night_priority,
             "context_note": context_note,
         }
 
@@ -173,5 +205,7 @@ def assess_roadside_safety(
         "eta_estimate": eta_label,
         "distance_interpretation": distance_interpretation,
         "is_night": night,
+        "time_context": time_ctx,
+        "night_assistance_priority": night_priority,
         "context_note": context_note,
     }

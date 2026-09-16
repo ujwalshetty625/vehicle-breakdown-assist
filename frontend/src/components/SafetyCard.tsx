@@ -7,6 +7,7 @@ import {
     Clock,
     Moon,
     Sun,
+    Sunset,
     Wrench,
     FileText,
     PhoneCall,
@@ -43,7 +44,9 @@ export default function SafetyCard({
             : "Vehicle can be operated with caution to the nearest authorized repair facility. Drive at low speed.");
 
     const etaEstimate = roadsideSafety?.eta_estimate || "15-25 min";
-    const isNight = roadsideSafety?.is_night ?? false;
+    
+    // Backend time context (day | evening | night)
+    const timeContext = (roadsideSafety?.time_context || (roadsideSafety?.is_night ? "night" : "day")).toLowerCase();
 
     const getRiskColorClass = (risk: string) => {
         switch (risk.toLowerCase()) {
@@ -95,6 +98,13 @@ export default function SafetyCard({
                     <p className="guidance-text">{guidance}</p>
                 </div>
 
+                {timeContext === "night" && (
+                    <div style={{ background: "rgba(99, 102, 241, 0.08)", padding: "8px 12px", borderRadius: "8px", border: "1px solid rgba(99, 102, 241, 0.2)", fontSize: "0.775rem", color: "#3730a3", display: "flex", alignItems: "center", gap: "8px", marginBottom: "10px" }}>
+                        <Moon className="w-4 h-4 text-indigo-600 shrink-0" />
+                        <span>Nighttime breakdowns may involve increased roadside safety risk. Prioritize assistance and remain in a safe location.</span>
+                    </div>
+                )}
+
                 <div className="safety-actions-box" style={{ background: "#f8fafc", padding: "10px 12px", borderRadius: "8px", border: "1px solid #e2e8f0" }}>
                     <span style={{ fontSize: "0.725rem", color: "#64748b", fontWeight: "700", textTransform: "uppercase", display: "block", marginBottom: "6px" }}>
                         Recommended Safety Checklist
@@ -123,15 +133,19 @@ export default function SafetyCard({
                     </div>
 
                     <div className="safety-meta-item">
-                        <span className="meta-label">Time & Visibility</span>
+                        <span className="meta-label">Roadside Time Context</span>
                         <span className="meta-val flex items-center gap-1">
-                            {isNight ? (
+                            {timeContext === "night" ? (
                                 <>
-                                    <Moon className="w-3.5 h-3.5 text-indigo-500 inline mr-1" /> Nighttime (High Hazard)
+                                    <Moon className="w-3.5 h-3.5 text-indigo-500 inline mr-1" /> Night (Elevated Priority)
+                                </>
+                            ) : timeContext === "evening" ? (
+                                <>
+                                    <Sunset className="w-3.5 h-3.5 text-amber-600 inline mr-1" /> Evening (Approaching Night)
                                 </>
                             ) : (
                                 <>
-                                    <Sun className="w-3.5 h-3.5 text-amber-500 inline mr-1" /> Daytime Visibility
+                                    <Sun className="w-3.5 h-3.5 text-amber-500 inline mr-1" /> Day (Normal Conditions)
                                 </>
                             )}
                         </span>

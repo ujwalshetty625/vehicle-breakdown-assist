@@ -108,6 +108,8 @@ export interface RoadsideSafetyInfo {
     eta_estimate: string;
     distance_interpretation: string;
     is_night: boolean;
+    time_context?: "day" | "evening" | "night" | string;
+    night_assistance_priority?: "normal" | "elevated" | string;
     context_note: string;
 }
 
