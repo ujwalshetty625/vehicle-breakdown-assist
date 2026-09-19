@@ -1,5 +1,7 @@
 from fastapi import APIRouter, Depends
+
 from sqlalchemy.orm import Session
+
 from app.db.session import get_db
 from app.schemas.match import MatchRequest, MatchResponse, MatchedProviderOut
 from app.services.matching import find_candidates
@@ -9,7 +11,10 @@ router = APIRouter()
 
 
 @router.post("/match-provider", response_model=MatchResponse)
-def match_provider(request: MatchRequest, db: Session = Depends(get_db)):
+def match_provider(
+    request: MatchRequest,
+    db: Session = Depends(get_db),
+):
     candidates = find_candidates(
         db,
         required_capability=request.required_capability,
@@ -28,12 +33,23 @@ def match_provider(request: MatchRequest, db: Session = Depends(get_db)):
 
     ranked = [
         MatchedProviderOut(
-            id=p.id, name=p.name, distance_km=round(dist, 2), rating=p.rating, score=round(score, 2)
+            id=p.id,
+            name=p.name,
+            phone=p.phone,
+            email=p.email,
+            distance_km=round(dist, 2),
+            rating=p.rating,
+            score=round(score, 2),
+            latitude=p.latitude,
+            longitude=p.longitude,
+            capabilities=[c.name for c in p.capabilities],
+            vehicle_types=[vt.name for vt in p.vehicle_types],
         )
         for p, dist, score in candidates
     ]
 
     top_provider = candidates[0][0]
+
     top_provider.is_available = False
 
     assignment = Assignment(
@@ -44,6 +60,7 @@ def match_provider(request: MatchRequest, db: Session = Depends(get_db)):
         provider_id=top_provider.id,
         status="assigned",
     )
+
     db.add(assignment)
     db.commit()
     db.refresh(assignment)

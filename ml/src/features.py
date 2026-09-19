@@ -263,20 +263,22 @@ def dict_to_ordered_array(sensor_dict: Dict[str, Any]) -> np.ndarray:
 def compute_derived_features(df: pd.DataFrame) -> pd.DataFrame:
     """
     Optional Feature Engineering Experiment:
-    Computes domain-specific combustion and mechanical engineering features.
+    Computes domain-specific combustion, physics, and exhaust emission diagnostic features.
 
-    NOTE: Baseline production model trains on raw 14 features.
+    NOTE: Baseline production model trains on raw 14 features to match API contract.
     This function is retained for exploratory and advanced experimentation.
 
     Derived features:
     1. Lambda_Deviation: Absolute deviation from stoichiometric lambda (|Lambda - 1.0|)
     2. AFR_Deviation: Deviation from stoichiometric AFR 14.7 (|AFR - 14.7|)
-    3. Specific_Fuel_Consumption: Fuel per unit power (Consumption L/H / (Power + 1e-5))
-    4. Throttle_MAP_Ratio: TPS to MAP ratio indicator
+    3. CO_HC_Ratio: Incomplete combustion diagnostic ratio (CO / (HC + 1e-5))
+    4. HC_O2_Ratio: Residual oxygen vs unburned hydrocarbon ratio (HC / (O2 + 1e-5))
+    5. CO_CO2_Ratio: Combustion efficiency index (CO / (CO2 + 1e-5))
+    6. Specific_Fuel_Consumption: Fuel per unit power (Consumption L/H / (Power + 1e-5))
+    7. Throttle_MAP_Ratio: TPS to MAP volumetric efficiency proxy (TPS / (MAP + 1e-5))
     """
     df_feat = df.copy()
 
-    # Column access handling for either column naming
     lh_col = "Consumption L/H" if "Consumption L/H" in df_feat.columns else "Fuel_consumption_LH"
 
     if "Lambda" in df_feat.columns:
@@ -284,6 +286,15 @@ def compute_derived_features(df: pd.DataFrame) -> pd.DataFrame:
 
     if "AFR" in df_feat.columns:
         df_feat["AFR_Deviation"] = (df_feat["AFR"] - 14.7).abs()
+
+    if "CO" in df_feat.columns and "HC" in df_feat.columns:
+        df_feat["CO_HC_Ratio"] = df_feat["CO"] / (df_feat["HC"] + 1e-5)
+
+    if "HC" in df_feat.columns and "O2" in df_feat.columns:
+        df_feat["HC_O2_Ratio"] = df_feat["HC"] / (df_feat["O2"] + 1e-5)
+
+    if "CO" in df_feat.columns and "CO2" in df_feat.columns:
+        df_feat["CO_CO2_Ratio"] = df_feat["CO"] / (df_feat["CO2"] + 1e-5)
 
     if "Power" in df_feat.columns and lh_col in df_feat.columns:
         df_feat["Specific_Fuel_Consumption"] = df_feat[lh_col] / (df_feat["Power"] + 1e-5)

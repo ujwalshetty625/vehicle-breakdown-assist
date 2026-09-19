@@ -74,6 +74,8 @@ class Provider(Base):
     id = Column(Integer, primary_key=True)
 
     name = Column(String, nullable=False)
+    phone = Column(String, nullable=True)
+    email = Column(String, nullable=True)
 
     latitude = Column(Float, nullable=False)
     longitude = Column(Float, nullable=False)

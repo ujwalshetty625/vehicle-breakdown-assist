@@ -3,13 +3,13 @@
   "model_type": "RandomForestClassifier",
   "total_test_samples": 11200,
   "overall_metrics": {
-    "accuracy": 0.744018,
-    "macro_f1": 0.75281,
-    "weighted_f1": 0.743877,
-    "macro_precision": 0.753359,
-    "weighted_precision": 0.744865,
-    "macro_recall": 0.753351,
-    "weighted_recall": 0.744018
+    "accuracy": 0.747589,
+    "macro_f1": 0.755617,
+    "weighted_f1": 0.74643,
+    "macro_precision": 0.757646,
+    "weighted_precision": 0.749337,
+    "macro_recall": 0.757506,
+    "weighted_recall": 0.747589
   },
   "per_class_metrics": {
     "No Fault": {
@@ -25,15 +25,15 @@
       "support": 2200
     },
     "Lean Mixture": {
-      "precision": 0.52435,
-      "recall": 0.477333,
-      "f1_score": 0.499738,
+      "precision": 0.534669,
+      "recall": 0.444667,
+      "f1_score": 0.485532,
       "support": 3000
     },
     "Low Voltage": {
-      "precision": 0.489084,
-      "recall": 0.536071,
-      "f1_score": 0.511501,
+      "precision": 0.495915,
+      "recall": 0.585357,
+      "f1_score": 0.536937,
       "support": 2800
     }
   },
@@ -53,14 +53,14 @@
     [
       0,
       0,
-      1432,
-      1568
+      1334,
+      1666
     ],
     [
       0,
       0,
-      1299,
-      1501
+      1161,
+      1639
     ]
   ],
   "class_labels": {
@@ -70,19 +70,19 @@
     "3": "Low Voltage"
   },
   "feature_importances": {
-    "CO": 0.123564,
-    "Force": 0.105751,
-    "Consumption L/H": 0.086408,
-    "HC": 0.085567,
-    "Power": 0.085118,
-    "Consumption L/100KM": 0.084131,
-    "Speed": 0.072967,
-    "RPM": 0.069415,
-    "O2": 0.067725,
-    "CO2": 0.066841,
-    "TPS": 0.046456,
-    "MAP": 0.038431,
-    "AFR": 0.036438,
-    "Lambda": 0.03119
+    "CO": 0.137711,
+    "Force": 0.107088,
+    "HC": 0.085864,
+    "Consumption L/100KM": 0.083853,
+    "Power": 0.080901,
+    "Consumption L/H": 0.07983,
+    "O2": 0.073623,
+    "Speed": 0.07329,
+    "RPM": 0.070417,
+    "CO2": 0.068019,
+    "TPS": 0.04659,
+    "MAP": 0.038971,
+    "AFR": 0.029961,
+    "Lambda": 0.023881
   }
 }

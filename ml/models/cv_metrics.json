@@ -1,0 +1,153 @@
+{
+  "model_name": "dashboard-warning-light-resnet18-v1",
+  "dataset_name": "Roboflow Car Dashboard Warning Lights (CC BY 4.0)",
+  "total_samples": 630,
+  "validation_strategy": "5-Fold Stratified Cross-Validation",
+  "overall_accuracy": 0.8905,
+  "macro_precision": 0.8916,
+  "macro_recall": 0.8905,
+  "macro_f1": 0.8893,
+  "weighted_f1": 0.8893,
+  "fold_accuracies": [
+    0.8889,
+    0.9048,
+    0.873,
+    0.881,
+    0.9048
+  ],
+  "fold_macro_f1s": [
+    0.8622,
+    0.9026,
+    0.866,
+    0.8666,
+    0.8843
+  ],
+  "per_class_breakdown": {
+    "Airbag Indicator Light": {
+      "class_id": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1_score": 1.0,
+      "support": 35
+    },
+    "Anti-lock Braking System (ABS) Warning Light": {
+      "class_id": 1,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1_score": 1.0,
+      "support": 35
+    },
+    "Automatic Shift Lock / Engine Start Indicator": {
+      "class_id": 2,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1_score": 1.0,
+      "support": 35
+    },
+    "Battery Alert Light": {
+      "class_id": 3,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1_score": 1.0,
+      "support": 35
+    },
+    "Brake Warning Light": {
+      "class_id": 4,
+      "precision": 1.0,
+      "recall": 0.9714,
+      "f1_score": 0.9855,
+      "support": 35
+    },
+    "Check Engine Light": {
+      "class_id": 5,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1_score": 1.0,
+      "support": 35
+    },
+    "Engine Temperature Warning Light": {
+      "class_id": 6,
+      "precision": 0.5,
+      "recall": 0.6571,
+      "f1_score": 0.5679,
+      "support": 35
+    },
+    "Fog Lamp Indicator": {
+      "class_id": 7,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1_score": 1.0,
+      "support": 35
+    },
+    "Lane Departure Warning": {
+      "class_id": 8,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1_score": 1.0,
+      "support": 35
+    },
+    "Low Fuel Warning Light": {
+      "class_id": 9,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1_score": 1.0,
+      "support": 35
+    },
+    "Oil Pressure Warning Light": {
+      "class_id": 10,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1_score": 1.0,
+      "support": 35
+    },
+    "Seat Belt Reminder": {
+      "class_id": 11,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1_score": 1.0,
+      "support": 35
+    },
+    "Security Indicator Light": {
+      "class_id": 12,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1_score": 1.0,
+      "support": 35
+    },
+    "Tire Pressure Warning Light": {
+      "class_id": 13,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1_score": 1.0,
+      "support": 35
+    },
+    "Traction Control Light": {
+      "class_id": 14,
+      "precision": 0.5122,
+      "recall": 0.6,
+      "f1_score": 0.5526,
+      "support": 35
+    },
+    "Traction Control Malfunction": {
+      "class_id": 15,
+      "precision": 0.5172,
+      "recall": 0.4286,
+      "f1_score": 0.4688,
+      "support": 35
+    },
+    "Transmission Temperature Warning": {
+      "class_id": 16,
+      "precision": 0.52,
+      "recall": 0.3714,
+      "f1_score": 0.4333,
+      "support": 35
+    },
+    "Washer Fluid Reminder": {
+      "class_id": 17,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1_score": 1.0,
+      "support": 35
+    }
+  }
+}

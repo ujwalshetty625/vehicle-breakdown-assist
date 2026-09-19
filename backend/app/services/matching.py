@@ -38,23 +38,58 @@ def find_candidates(
     filtered by availability + capability + vehicle type, sorted best-first.
     exclude_provider_id lets /replan skip a provider that already failed for this breakdown.
     """
-    query = db.query(Provider).filter(Provider.is_available == True)  # noqa: E712
+    query = db.query(Provider).filter(Provider.is_available == True)
     if exclude_provider_id is not None:
         query = query.filter(Provider.id != exclude_provider_id)
     providers = query.all()
 
+    if not providers:
+        return []
+
+    # Normalize raw vehicle type input
+    raw_vt = (vehicle_type or "").lower()
+    target_vt = "car"
+    if any(k in raw_vt for k in ["motorcycle", "bike", "two_wheeler", "scooter", "moped"]):
+        target_vt = "motorcycle"
+    elif any(k in raw_vt for k in ["suv", "crossover", "4x4", "jeep"]):
+        target_vt = "suv"
+    elif any(k in raw_vt for k in ["auto", "rickshaw", "e-rickshaw", "3_wheeler"]):
+        target_vt = "auto_rickshaw"
+    elif any(k in raw_vt for k in ["truck", "mini_truck", "lorry", "pickup"]):
+        target_vt = "truck"
+    elif any(k in raw_vt for k in ["van", "minivan"]):
+        target_vt = "van"
+
+    VT_ALIASES = {
+        "motorcycle": ["motorcycle", "scooter", "moped", "two_wheeler"],
+        "car": ["car", "taxi", "suv", "sedan", "hatchback", "van", "coupe", "ev"],
+        "suv": ["suv", "car", "truck", "pickup_truck"],
+        "auto_rickshaw": ["auto_rickshaw", "e_rickshaw", "scooter", "car"],
+        "van": ["van", "car", "suv", "mini_truck"],
+        "truck": ["truck", "mini_truck", "light_truck", "heavy_truck", "suv"],
+    }
+
+    acceptable_types = set([target_vt])
+    if target_vt in VT_ALIASES:
+        acceptable_types.update(VT_ALIASES[target_vt])
+
     candidates = []
+    fallback_capability_candidates = []
+
+    req_cap = (required_capability or "").lower()
+
     for p in providers:
-        capability_names = [c.name for c in p.capabilities]
-        if required_capability not in capability_names:
-            continue
-        vehicle_type_names = [vt.name for vt in p.vehicle_types]
-        if vehicle_type not in vehicle_type_names:
-            continue
+        capability_names = [c.name.lower() for c in p.capabilities]
+        exact_capability = (not req_cap or req_cap in capability_names)
+
+        vehicle_type_names = set(vt.name.lower() for vt in p.vehicle_types)
+        has_vehicle_match = bool(acceptable_types.intersection(vehicle_type_names))
 
         distance = haversine_km(latitude, longitude, p.latitude, p.longitude)
         score = score_provider(distance, p.rating)
-        candidates.append((p, distance, score))
+
+        if exact_capability and has_vehicle_match:
+            candidates.append((p, distance, score))
 
     candidates.sort(key=lambda c: c[2])
     return candidates

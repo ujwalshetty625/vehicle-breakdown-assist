@@ -1,8 +1,8 @@
-# Model Card: Engine Fault Diagnostic Classifier
+# Model Card: Engine Fault Diagnostic Classifier (v2)
 
 **Project**: Intelligent Multimodal Vehicle Breakdown Assistance and Adaptive Recovery System  
-**Model Name**: `engine-fault-rf-v1`  
-**Artifact Files**: `ml/models/model.pkl`, `ml/models/scaler.pkl`, `ml/models/feature_order.json`, `ml/models/labels.json`  
+**Model Name**: `engine-fault-rf-v2`  
+**Artifact Files**: `ml/models/model.pkl` (17.87 MB compressed), `ml/models/scaler.pkl`, `ml/models/feature_order.json`, `ml/models/labels.json`  
 **Date Trained**: August 2026  
 **License & Source Dataset**: EngineFaultDB (Vergara et al., 2023, IEEE Access, DOI: [10.1109/ACCESS.2023.3331316](https://doi.org/10.1109/ACCESS.2023.3331316))  
 
@@ -10,7 +10,7 @@
 
 ## 1. Overview & Purpose
 
-This machine learning model serves as the core diagnostic engine for automotive telemetry. It ingests 14 real-time vehicle sensor readings and classifies the operational engine state into one of 4 discrete fault modes to trigger appropriate roadside assistance and recovery workflows.
+This machine learning model serves as the primary diagnostic engine for vehicle engine telemetry. It ingests 14 real-time automotive sensor readings and classifies the operational engine state into one of 4 discrete fault modes to trigger appropriate roadside assistance and recovery workflows.
 
 ### Primary Intended Use
 - Real-time diagnostic inference inside the backend API (FastAPI) upon receiving vehicle CAN bus / OBD-II telemetry packets.
@@ -189,36 +189,23 @@ class EngineFaultPredictor:
             "class_probabilities": class_prob_dict,
             "status": "success",
         }
-
-
-# FastAPI Endpoint Example:
-# from fastapi import FastAPI, HTTPException
-# app = FastAPI()
-# predictor = EngineFaultPredictor()
-#
-# @app.post("/api/diagnostics/classify")
-# def classify_engine(telemetry: dict):
-#     try:
-#         return predictor.predict(telemetry)
-#     except ValueError as e:
-#         raise HTTPException(status_code=422, detail=str(e))
 ```
 
 ---
 
-## 5. Verified Evaluation Metrics (Held-Out Test Set)
+## 5. Verified Evaluation Metrics (Held-Out Test Set — v2)
 
-Evaluated on **11,200 stratified test samples** (20% held-out partition of the 55,999-row EngineFaultDB):
+Evaluated on **11,200 stratified test samples** (20% held-out partition of the deduplicated 55,998-row EngineFaultDB):
 
 ### Overall Performance
 
 | Metric | Score | Percentage |
 |:---|:---:|:---:|
-| **Overall Accuracy** | `0.7440` | **74.40%** |
-| **Macro F1-Score** | `0.7528` | **75.28%** |
-| **Weighted F1-Score** | `0.7439` | **74.39%** |
-| **Macro Precision** | `0.7534` | **75.34%** |
-| **Macro Recall** | `0.7534` | **75.34%** |
+| **Overall Accuracy** | `0.7476` | **74.76%** |
+| **Macro F1-Score** | `0.7556` | **75.56%** |
+| **Weighted F1-Score** | `0.7464` | **74.64%** |
+| **Macro Precision** | `0.7576` | **75.76%** |
+| **Macro Recall** | `0.7575` | **75.75%** |
 
 ### Per-Class Detailed Breakdown
 
@@ -226,25 +213,46 @@ Evaluated on **11,200 stratified test samples** (20% held-out partition of the 5
 |:---|:---:|:---:|:---:|:---:|
 | **No Fault** (0) | `1.0000` | `1.0000` | **`1.0000`** | 3,200 samples |
 | **Rich Mixture** (1) | `1.0000` | `1.0000` | **`1.0000`** | 2,200 samples |
-| **Lean Mixture** (2) | `0.5244` | `0.4773` | **`0.4997`** | 3,000 samples |
-| **Low Voltage** (3) | `0.4891` | `0.5361` | **`0.5115`** | 2,800 samples |
+| **Lean Mixture** (2) | `0.5347` | `0.4447` | **`0.4855`** | 3,000 samples |
+| **Low Voltage** (3) | `0.4959` | `0.5854` | **`0.5369`** | 2,800 samples |
 
 ### Top 5 Diagnostic Feature Importances (Gini Importance)
-1. `CO` (Carbon Monoxide emissions): **12.36%**
-2. `Force` (Engine Output Force): **10.58%**
-3. `Consumption L/H` (Fuel Rate / Hour): **8.64%**
-4. `HC` (Hydrocarbon emissions): **8.56%**
-5. `Power` (Engine Output Power): **8.51%**
+1. `CO` (Carbon Monoxide exhaust %): **13.77%**
+2. `Force` (Engine Output Force): **10.71%**
+3. `HC` (Hydrocarbon exhaust emissions): **8.59%**
+4. `Consumption L/100KM` (Fuel Rate / 100km): **8.39%**
+5. `Power` (Engine Output Power): **8.09%**
 
 ---
 
-## 6. Known Limitations & Scope Boundaries
+## 6. Changelog & Data Integrity Audit (v1 ➔ v2)
+
+### Leakage Audit Findings
+- An audit was conducted to verify whether the 1.0000 precision/recall in `No Fault` and `Rich Mixture` was an artifact of duplicate row leakage.
+- **Result**: The dataset contains only **1 exact duplicate row (0.0018%)** out of 55,999 records (in Class 3).
+- **Physical Explanation**:
+  - `Rich Mixture` is linearly separated by extreme spikes in `HC` (up to 975 ppm) and `CO` (up to 10.13%), allowing decision trees to isolate it with 100% boundary certainty.
+  - `No Fault` is cleanly bounded in baseline operating envelopes.
+  - `Lean Mixture` and `Low Voltage` overlap because weak ignition voltage causes incomplete combustion misfires that generate exhaust telemetry identical to lean air-fuel mixtures.
+
+### Changes Implemented in v2
+1. **Deduplication**: Exact duplicate row removed during preprocessing (`55,998` clean samples).
+2. **5-Fold Stratified Cross-Validation**: Validated hyperparameter stability across all folds.
+3. **Hyperparameter Tuning**: Tuned `max_depth=25`, `n_estimators=200`, and `class_weight='balanced'` yielding improved Macro Recall (75.75%) and Accuracy (74.76%).
+4. **Artifact Compression**: Serialized model with `joblib.dump(..., compress=3)`, compressing `model.pkl` from 163.35 MB down to **17.87 MB** for fast loading and GitHub compliance.
+
+---
+
+## 7. Known Limitations & Scope Boundaries
 
 > [!WARNING]
 > **Diagnostic Domain Boundary**:
 > This machine learning model is exclusively trained to diagnose **internal engine, air-fuel mixture, and electrical voltage faults** (`No Fault`, `Rich Mixture`, `Lean Mixture`, and `Low Voltage`).
 >
-> It does **NOT** diagnose or detect:
+> **Sensor Telemetry Proxy Limitation**:
+> `Lean Mixture` vs `Low Voltage` remains the hardest pair to separate because no sensor feature in the 14-channel telemetry directly measures electrical battery voltage or ignition coil primary voltage — combustion-side signals only act as an indirect proxy for it.
+>
+> The model does **NOT** diagnose or detect:
 > 1. **Tyre Failures** (e.g., punctures, low tire pressure TPMS alerts, blowouts).
 > 2. **Cooling System Overheating** (e.g., coolant leaks, radiator fan failure).
 > 3. **Mechanical Drivetrain / Transmission / Brake Failures**.

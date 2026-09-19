@@ -3,6 +3,8 @@ from pydantic import BaseModel
 class ProviderOut(BaseModel):
     id: int
     name: str
+    phone: str | None = None
+    email: str | None = None
     latitude: float
     longitude: float
     vehicle_types: list[str]
