@@ -1,75 +1,82 @@
-# React + TypeScript + Vite
+# Frontend Portal — Vehicle Breakdown Assist
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+**Intelligent Multimodal Vehicle Breakdown Assistance and Adaptive Recovery System**
 
-Currently, two official plugins are available:
+This directory houses the modern, responsive web application for stranded drivers and roadside dispatchers. It provides an intuitive, high-speed interface for reporting vehicle breakdowns, capturing dashboard warning lights, viewing real-time machine learning diagnostics, inspecting interactive provider maps, and managing recovery dispatches.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+---
 
-## React Compiler
+## 🛠️ Technology Stack
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- **Framework**: React 18 with TypeScript (`.tsx`)
+- **Build Tooling**: Vite 5
+- **Mapping & Geolocation**: Leaflet / React-Leaflet with OpenStreetMap tiles
+- **Icons & UI Accents**: Lucide React
+- **Design Language**: Custom Glassmorphic Dark/Light adaptive design with fluid micro-animations
 
-## Expanding the ESLint configuration
+---
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+## 📁 Directory Structure
 
 ```
-
-You can also install [eslint-plugin-react-x](https://npmx.dev/package/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://npmx.dev/package/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-
+frontend/
+├── public/                 # Static assets & icons
+├── src/
+│   ├── api/
+│   │   └── api.ts          # Centralized Axios/Fetch API client communicating with FastAPI
+│   ├── assets/             # Brand logos & imagery
+│   ├── components/         # Reusable UI Components
+│   │   ├── BreakdownForm.tsx   # Comprehensive multi-step breakdown intake form
+│   │   ├── DiagnosisCard.tsx   # AI confidence meter & fault telemetry breakdown
+│   │   ├── InteractiveMap.tsx  # Leaflet interactive map with driver & provider pins
+│   │   ├── Navbar.tsx          # Navigation header & theme switcher
+│   │   ├── ProviderCard.tsx    # Matched provider details, direct call & replanning action
+│   │   └── SafetyCard.tsx      # Context-aware roadside risk card & safety instructions
+│   ├── pages/
+│   │   ├── Breakdown.tsx   # Main intake portal (Brand presets, symptoms, OBD-II scan, camera)
+│   │   ├── Home.tsx        # Landing page & emergency hotline quick access
+│   │   └── Results.tsx     # Diagnostic results, live dispatch map, and provider directory
+│   ├── types/
+│   │   └── vehicle.ts      # TypeScript interfaces for API schemas, providers, and telemetry
+│   ├── App.tsx             # Root page router & global state coordinator
+│   ├── index.css           # Global design system, color tokens, and responsive layout classes
+│   └── main.tsx            # DOM root mounting entrypoint
+├── index.html              # HTML5 template
+├── package.json            # Dependencies & build scripts
+├── tsconfig.json           # TypeScript configuration
+└── vite.config.ts          # Vite server & proxy configuration
 ```
+
+---
+
+## 🚀 Getting Started & Local Development
+
+### 1. Install Node Dependencies
+Ensure Node.js (v18+) is installed:
+```bash
+cd frontend
+npm install
+```
+
+### 2. Start Local Development Server
+```bash
+npm run dev
+```
+The application will launch at `http://localhost:5173`.
+
+### 3. Production Build
+```bash
+npm run build
+```
+Generates optimized static production assets in `dist/`.
+
+---
+
+## 🌟 Key User Interface Features
+
+1. **1-Click Vehicle & Landmark Presets**: Quick selection buttons for popular vehicle brands (Honda, Hyundai, Maruti, Tata, Royal Enfield) and regional landmark locations.
+2. **Preset Diagnostic Scenarios & Simulated OBD-II Scan**: Test real breakdown modes (`Flat Tire`, `Rich Mixture Misfire`, `Battery Dead`, `Lean Mixture Vacuum Leak`, `Normal Operation`) instantly with real sensor parameters.
+3. **Live Dashboard Photo Capture**: Direct integration with mobile camera or local file upload to trigger ResNet-18 visual warning light analysis.
+4. **Interactive Dispatch Map**: Visualizes driver coordinates, primary matched recovery vehicle route, and alternative provider pins within a dynamic radius.
+5. **Contextual Safety Advisory Card**: Highlights situational roadside risk (`Low`, `Moderate`, `Elevated`, `High`) with time-contextual safety guidance for stranded motorists.
+6. **Adaptive Re-planning**: 1-click button on the assigned provider card to re-assign the breakdown to the next qualified candidate if the primary provider is unavailable.
