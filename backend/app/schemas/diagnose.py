@@ -21,5 +21,9 @@ class DiagnoseRequest(BaseModel):
 class DiagnoseResponse(BaseModel):
     fault_type: int
     fault_name: str
+    user_friendly_name: str = ""
+    description: str = ""
     confidence: float
     class_probabilities: list[float]
+    explanation: str = ""
+    user_friendly_explanation: str = ""

@@ -4,6 +4,11 @@ from pathlib import Path
 import numpy as np
 
 from app.ml_integration.model_loader import load_model, load_scaler
+from app.services.diagnosis import (
+    get_user_friendly_name,
+    get_fault_description,
+    get_fault_explanation,
+)
 
 
 MODELS_DIR = (
@@ -35,10 +40,17 @@ def predict_fault(features: dict[str, float]):
 
     fault_type = int(prediction)
     confidence = float(probabilities[fault_type])
+    fault_name = LABELS[str(fault_type)]
+    user_friendly_name = get_user_friendly_name(fault_name)
+    description = get_fault_description(fault_name)
 
     return {
         "fault_type": fault_type,
-        "fault_name": LABELS[str(fault_type)],
+        "fault_name": fault_name,
+        "user_friendly_name": user_friendly_name,
+        "description": description,
+        "explanation": description,
+        "user_friendly_explanation": description,
         "confidence": round(confidence, 4),
         "class_probabilities": [
             round(float(probability), 4)

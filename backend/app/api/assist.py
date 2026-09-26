@@ -10,7 +10,12 @@ from app.schemas.assist import AssistRequest
 from app.ml_integration.inference import predict_fault
 from app.ml_integration.cv_inference import analyze_warning_light
 
-from app.services.diagnosis import get_required_capability
+from app.services.diagnosis import (
+    get_required_capability,
+    get_user_friendly_name,
+    get_fault_description,
+    get_fault_explanation,
+)
 from app.services.matching import find_candidates
 from app.services.severity import assess_severity
 from app.services.roadside_safety import assess_roadside_safety
@@ -232,6 +237,12 @@ def assist(
 
     else:
         required_capability = None
+
+    diagnosis["user_friendly_name"] = get_user_friendly_name(diagnosis["fault_name"])
+    diagnosis["description"] = get_fault_description(diagnosis["fault_name"])
+    diagnosis["explanation"] = diagnosis["description"]
+    diagnosis["user_friendly_explanation"] = diagnosis["description"]
+
 
     # =========================================================
     # 8. No roadside assistance required

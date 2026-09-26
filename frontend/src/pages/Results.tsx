@@ -154,6 +154,11 @@ function Results({
         ];
     }
 
+    const faultDescription =
+        diagnosis?.description ||
+        diagnosis?.explanation ||
+        diagnosis?.userFriendlyExplanation;
+
     const confidencePercent = diagnosis?.confidence !== undefined && diagnosis?.confidence !== null
         ? Math.round(diagnosis.confidence > 1 ? diagnosis.confidence : diagnosis.confidence * 100)
         : Math.max(...displayProbabilities.map(p => p.val));
@@ -262,8 +267,23 @@ function Results({
                                 ML Fault Analysis
                             </span>
                             <h2 className="fault-title-text">
-                                {faultName}
+                                {diagnosis?.userFriendlyName || faultName}
                             </h2>
+                            {diagnosis?.userFriendlyName && (
+                                <p style={{ fontSize: "0.8rem", color: "#64748b", margin: "3px 0 0 0" }}>
+                                    Technical ML Diagnosis: <strong>{faultName}</strong>
+                                </p>
+                            )}
+                            {faultDescription && (
+                                <div className="beginner-explanation-box" style={{ marginTop: "8px", padding: "8px 12px", background: "rgba(2, 132, 199, 0.06)", borderRadius: "6px", border: "1px solid rgba(2, 132, 199, 0.15)" }}>
+                                    <span style={{ fontSize: "0.725rem", fontWeight: "700", color: "#0369a1", textTransform: "uppercase", display: "block", marginBottom: "2px" }}>
+                                        What this means:
+                                    </span>
+                                    <p style={{ margin: 0, fontSize: "0.85rem", color: "#334155", lineHeight: "1.4" }}>
+                                        {faultDescription}
+                                    </p>
+                                </div>
+                            )}
                         </div>
 
                         <div className="confidence-meter-group">

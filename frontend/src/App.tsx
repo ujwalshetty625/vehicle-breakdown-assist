@@ -42,6 +42,10 @@ function App() {
 
             const diagnosisResult: DiagnosisResult = {
                 fault: response.diagnosis.fault_name,
+                userFriendlyName: response.diagnosis.user_friendly_name,
+                description: response.diagnosis.description,
+                explanation: response.diagnosis.description || response.diagnosis.explanation,
+                userFriendlyExplanation: response.diagnosis.description || response.diagnosis.user_friendly_explanation,
                 confidence: response.diagnosis.confidence,
                 severity: response.severity?.severity
                     ? response.severity.severity.charAt(0).toUpperCase() + response.severity.severity.slice(1)

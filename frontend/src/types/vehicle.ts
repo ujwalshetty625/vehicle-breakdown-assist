@@ -116,6 +116,10 @@ export interface RoadsideSafetyInfo {
 
 export interface DiagnosisResult {
     fault: string;
+    userFriendlyName?: string;
+    description?: string;
+    explanation?: string;
+    userFriendlyExplanation?: string;
     confidence: number;
     severity: string;
     safeToDrive?: boolean;
@@ -181,6 +185,10 @@ export interface AssistResponse {
     diagnosis: {
         fault_type: number;
         fault_name: string;
+        user_friendly_name?: string;
+        description?: string;
+        explanation?: string;
+        user_friendly_explanation?: string;
         confidence: number;
         class_probabilities: number[];
     };

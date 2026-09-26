@@ -89,6 +89,15 @@ graph TD
 ### 5. 🗺️ Modern Interactive Web Portal
 - High-performance React 18 interface with Leaflet interactive maps, glassmorphism design, brand quick-selectors, simulated OBD-II scans, and live dispatch tracking.
 
+### 6. 💡 Beginner-Friendly Diagnostic Interpretation Layer
+- **Preserved Technical Rigor**: Internally maintains the canonical machine learning classifications (`No Fault`, `Rich Mixture`, `Lean Mixture`, `Low Voltage`) for physical diagnostics, severity scoring, and capability routing.
+- **Consumer Interpretation Mappings**: Directly provides `user_friendly_name` and clear diagnostic `description` to motorists:
+  - `No Fault` &rarr; *"No issue detected"* — The available vehicle diagnostic data does not indicate a major fault.
+  - `Rich Mixture` &rarr; *"Too much fuel in the engine"* — The engine appears to be receiving more fuel than required, which may affect performance and fuel efficiency.
+  - `Lean Mixture` &rarr; *"Not enough fuel in the engine"* — The engine appears to be receiving less fuel than required, which may lead to poor performance or uneven engine operation.
+  - `Low Voltage` &rarr; *"Battery or electrical power issue"* — The vehicle's electrical system is showing unusually low voltage, which may indicate a battery or charging-system problem.
+- **Dual Display UX**: The React portal features friendly interpretation prominently while keeping the underlying technical ML diagnosis visible as secondary context for technicians.
+
 ---
 
 ## 🧰 Technology Stack Matrix
